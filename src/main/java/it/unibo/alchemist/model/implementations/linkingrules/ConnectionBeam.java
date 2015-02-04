@@ -26,6 +26,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,8 +38,8 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 
 	private static final long serialVersionUID = -6303232843110524434L;
 	private final double range;
-	private IEnvironment2DWithObstacles<IObstacle2D, T> oenv;
-	private final Area obstacles = new Area();
+	private transient IEnvironment2DWithObstacles<IObstacle2D, T> oenv;
+	private transient Area obstacles = new Area();
 
 	public ConnectionBeam(final double radius, final double beamSize) {
 		super(radius);
@@ -145,6 +147,12 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 			}
 		}
 		return false;
+	}
+	
+	private void readObject(final ObjectInputStream o) throws ClassNotFoundException, IOException {
+		o.defaultReadObject();
+		oenv = null;
+		obstacles = new Area();
 	}
 	
 }
