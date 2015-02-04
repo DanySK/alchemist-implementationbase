@@ -68,7 +68,7 @@ public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T
 						final double px = dx + stepx * (i % nx);
 						final double py = dy + stepy * ((i / nx) % ny);
 						final IPosition pos = new Continuous2DEuclidean(px, py);
-						if(oenv == null || !oenv.intersectsObstacle(nextDown(px),nextDown(py),nextUp(px),nextUp(py))) {
+						if (oenv == null || !oenv.intersectsObstacle(nextDown(px), nextDown(py), nextUp(px), nextUp(py))) {
 							array.add(pos);
 						}
 					}, (c1, c2) -> c1.addAll(c2));
