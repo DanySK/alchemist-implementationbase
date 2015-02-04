@@ -16,7 +16,6 @@ import it.unibo.alchemist.utils.L;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.stream.Collectors;
 
 import org.danilopianini.view.ExportForGUI;
 
