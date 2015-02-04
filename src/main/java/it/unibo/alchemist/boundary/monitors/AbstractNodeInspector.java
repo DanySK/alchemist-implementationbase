@@ -58,10 +58,9 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 		}
 		final int fminId = minId;
 		final int fmaxId = maxId;
-		return env.getNodes().parallelStream().filter((node) -> {
-			final int id = node.getId();
-			return fminId <= id && id <= fmaxId;
-		}).collect(Collectors.toList());
+		return env.getNodes().stream()
+				.filter(node -> fminId <= node.getId() && node.getId() <= fmaxId)
+				.collect(Collectors.toList());
 	}
 
 
