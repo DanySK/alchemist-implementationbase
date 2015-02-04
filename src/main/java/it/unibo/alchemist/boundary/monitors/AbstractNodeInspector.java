@@ -45,7 +45,7 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 		if (filter && !idrange.equals(idrangeCache)) {
 			try {
 				idrangeCache = idrange;
-				final StringTokenizer tk = new StringTokenizer(idrangeCache, "- ;:.,_@^?=)(/&%$£!|\\");
+				final StringTokenizer tk = new StringTokenizer(idrangeCache, "- ;:.,_@^?=)(/&%$!|\\");
 				if (tk.hasMoreElements()) {
 					minId = Integer.parseInt(tk.nextToken());
 					if (tk.hasMoreElements()) {
