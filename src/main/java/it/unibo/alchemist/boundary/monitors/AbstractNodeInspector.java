@@ -14,6 +14,7 @@ import it.unibo.alchemist.model.interfaces.IReaction;
 import it.unibo.alchemist.model.interfaces.ITime;
 import it.unibo.alchemist.utils.L;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -60,7 +61,7 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 		final int fmaxId = maxId;
 		return env.getNodes().stream()
 				.filter(node -> fminId <= node.getId() && node.getId() <= fmaxId)
-				.collect(Collectors.toList());
+				.collect(ArrayList::new, (l, el) -> l.add(el), (l1, l2) -> l1.addAll(l2));
 	}
 
 
