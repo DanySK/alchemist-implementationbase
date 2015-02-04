@@ -29,7 +29,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.danilopianini.lang.HashUtils;
@@ -70,11 +69,12 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 		}
 		if (!normal.isEmpty()) {
 			final IPosition cp = env.getPosition(center);
-			final List<INode<T>> neighs = Arrays.asList((INode<T>[])
-					normal.getNeighbors().stream().filter((neigh) -> {
-				final IPosition np = env.getPosition(neigh);
-				return !oenv.intersectsObstacle(cp, np) || projectedBeamOvercomesObstacle(cp, np);
-			}).toArray());
+			final List<INode<T>> neighs = normal.getNeighbors().stream()
+				.filter((neigh) -> {
+					final IPosition np = env.getPosition(neigh);
+					return !oenv.intersectsObstacle(cp, np) || projectedBeamOvercomesObstacle(cp, np);
+				})
+				.collect(ArrayList::new, (l, el) -> l.add(el), (l1, l2) -> l1.addAll(l2));
 			return new Neighborhood<>(center, neighs, env);
 		}
 		return normal;
