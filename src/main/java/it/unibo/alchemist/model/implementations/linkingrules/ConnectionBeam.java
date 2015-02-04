@@ -48,8 +48,8 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 	@Override
 	public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
 		final INeighborhood<T> normal = super.computeNeighborhood(center, env);
-		if(!HashUtils.pointerEquals(env, oenv)) {
-			if(! (env instanceof IEnvironment2DWithObstacles<?, ?>)) {
+		if (!HashUtils.pointerEquals(env, oenv)) {
+			if (!(env instanceof IEnvironment2DWithObstacles<?, ?>)) {
 				return normal;
 			}
 			oenv = (IEnvironment2DWithObstacles<IObstacle2D, T>) env;
@@ -63,12 +63,12 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 				final double my = nextAfter(bounds.getMinY(), java.lang.Double.NEGATIVE_INFINITY);
 				final double ex = nextUp(bounds.getMaxX());
 				final double ey = nextUp(bounds.getMaxY());
-				obstacles.add(new Area(new Rectangle2D.Double(mx, my, ex-mx, ey-my)));
+				obstacles.add(new Area(new Rectangle2D.Double(mx, my, ex - mx, ey - my)));
 			});
 		}
 		if (!normal.isEmpty()) {
 			final IPosition cp = env.getPosition(center);
-			final List<INode<T>> neighs = normal.getNeighbors().parallelStream().filter((neigh) -> {
+			final List<INode<T>> neighs = normal.getNeighbors().stream().filter((neigh) -> {
 				final IPosition np = env.getPosition(neigh);
 				return !oenv.intersectsObstacle(cp, np) || projectedBeamOvercomesObstacle(cp, np);
 			}).collect(Collectors.toList());
@@ -102,10 +102,10 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 		 * Create the beam
 		 */
 		final Path2D.Double beamShape = new Path2D.Double();
-		beamShape.moveTo(p1x+dx-cx, p1y+dy-cy);
-		beamShape.lineTo(p1x-dx-cx, p1y-dy-cy);
-		beamShape.lineTo(p2x-dx+cx, p2y-dy+cy);
-		beamShape.lineTo(p2x+dx+cx, p2y+dy+cy);
+		beamShape.moveTo(p1x + dx - cx, p1y + dy - cy);
+		beamShape.lineTo(p1x - dx - cx, p1y - dy - cy);
+		beamShape.lineTo(p2x - dx + cx, p2y - dy + cy);
+		beamShape.lineTo(p2x + dx + cx, p2y + dy + cy);
 		beamShape.closePath();
 		final Area beam = new Area(beamShape);
 		/*
@@ -119,7 +119,7 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 		Path2D.Double curpath = new Path2D.Double();
 		final PathIterator pi = beam.getPathIterator(null);
 		final double[] coords = new double[6];
-		while(!pi.isDone()) {
+		while (!pi.isDone()) {
 			switch(pi.currentSegment(coords)) {
 			case PathIterator.SEG_MOVETO :
 				curpath = new Path2D.Double();
@@ -139,8 +139,8 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 		/*
 		 * At least one area must contain both points
 		 */
-		for(final Path2D.Double p: subareas) {
-			if(p.contains(p1x, p1y) && p.contains(p2x, p2y)) {
+		for (final Path2D.Double p : subareas) {
+			if (p.contains(p1x, p1y) && p.contains(p2x, p2y)) {
 				return true;
 			}
 		}
