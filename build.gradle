@@ -185,6 +185,11 @@ uploadArchives {
 	            		email 'danilo.pianini@unibo.it'
 	            		url 'http://danilopianini.apice.unibo.it/'
 	            	}
+	            	developer {
+	            		name 'Enrico Galassi'
+	            		email 'enrico.galassi@studio.unibo.it'
+	            		url 'http://apice.unibo.it/xwiki/bin/view/XWiki/EnricoGalassi/'
+	            	}
 	            }
 	            scm {
 	            	url "$scmRootUrl/$artifactId"
