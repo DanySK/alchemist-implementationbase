@@ -112,13 +112,10 @@ public class EnvironmentBuilder<T> implements Serializable {
 	private T buildConcentration(final Node son, final Map<String, Object> subenv) throws InstantiationException, IllegalAccessException, InvocationTargetException {
 		if (concentrationClass != null) {
 			final String args = son.getNodeValue();
-//			final StringTokenizer tk = new StringTokenizer(args, " ,;");
 			final ArrayList<String> arguments = new ArrayList<String>(1);
-			arguments.add(args);
-//			while (tk.hasMoreElements()) {
-//				arguments.add(tk.nextToken());
-//			}
-//			arguments.trimToSize();
+			if (!args.isEmpty()) {
+				arguments.add(args);
+			}
 			final List<Constructor<IConcentration<T>>> list = unsafeExtractConstructors(concentrationClass);
 			return tryToBuild(list, arguments, subenv, random).getContent();
 		}
