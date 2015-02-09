@@ -32,7 +32,6 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,6 +49,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.danilopianini.lang.Pair;
+import org.danilopianini.lang.PrimitiveUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -575,10 +575,6 @@ public class EnvironmentBuilder<T> implements Serializable {
 		return Optional.of(resl);
 	}
 	
-	private static boolean classIsNumber(final Class<?> clazz) {
-		return NUMBER_CASTER.stream().map(Pair::getFirst).anyMatch(array -> Arrays.stream(array).anyMatch(clazz::isAssignableFrom));
-	}
-	
 	@SuppressWarnings("unchecked")
 	private static Object parseAndCreate(final Class<?> clazz, final String val, final Map<String, Object> env, final RandomEngine random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
 		if (clazz.isAssignableFrom(RandomEngine.class) && val.equalsIgnoreCase("random")) {
@@ -596,19 +592,15 @@ public class EnvironmentBuilder<T> implements Serializable {
 			/*
 			 * If Number is in clazz's hierarchy
 			 */
-			if (classIsNumber(clazz)) {
+			if (PrimitiveUtils.classIsNumber(clazz)) {
 				final Optional<Number> num = extractNumber(val);
 				if (num.isPresent()) {
-					final Optional<Pair<Class<?>[], Function<Number, ?>>> fconv = NUMBER_CASTER.stream()
-							.filter(pair -> Arrays.stream(pair.getFirst()).anyMatch(clazz::equals))
-							.findFirst();
-					if (fconv.isPresent()) {
-						return fconv.get().getSecond().apply(num.get());
-					}
+					final Optional<Number> castNum = PrimitiveUtils.castIfNeeded(clazz, num.get());
 					/*
-					 * Method requires Object or unsupported Number, returning what was parsed.
+					 * If method requires Object or unsupported Number, return
+					 * what was parsed.
 					 */
-					return num.get();
+					return castNum.orElse(num.get());
 				}
 			}
 			if (Character.TYPE.equals(clazz) || Character.class.equals(clazz)) {
