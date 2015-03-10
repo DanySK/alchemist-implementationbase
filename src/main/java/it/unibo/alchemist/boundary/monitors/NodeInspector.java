@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014, Danilo Pianini and contributors
+ * Copyright (C) 2010-2015, Danilo Pianini and contributors
  * listed in the project's pom.xml file.
  * 
  * This file is part of Alchemist, and is distributed under the terms of
@@ -8,6 +8,8 @@
  */
 package it.unibo.alchemist.boundary.monitors;
 
+import gnu.trove.list.TDoubleList;
+import gnu.trove.list.array.TDoubleArrayList;
 import it.unibo.alchemist.model.interfaces.IEnvironment;
 import it.unibo.alchemist.model.interfaces.IMolecule;
 import it.unibo.alchemist.model.interfaces.INode;
@@ -19,12 +21,12 @@ import it.unibo.alchemist.utils.L;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.danilopianini.lang.CollectionWithCurrentElement;
 import org.danilopianini.lang.HashUtils;
 import org.danilopianini.lang.ImmutableCollectionWithCurrentElement;
@@ -45,19 +47,22 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 	
 	@ExportForGUI(nameToExport = "Incarnation")
 	private transient CollectionWithCurrentElement<Incarnation> incarnation = new ImmutableCollectionWithCurrentElement<>(INCARNATIONS, INCARNATIONS.get(0));
+	@ExportForGUI(nameToExport = "Track id")
+	private boolean trackId;
 	@ExportForGUI(nameToExport = "Track position")
 	private boolean trackPos;
-	@ExportForGUI(nameToExport = "Molecule")
+	@ExportForGUI(nameToExport = "Separators")
+	private String propertySeparators = " ;,:";
+	@ExportForGUI(nameToExport = "Molecules")
 	private String molecule = "";
 	@ExportForGUI(nameToExport = "Properties")
 	private String property = "";
-	@ExportForGUI(nameToExport = "Property separators")
-	private String propertySeparators = " ;,:";
 
 	private String propertyCache;
-	private String lsaCache;
-	private transient IMolecule mol;
+	private String molCache;
+	private transient List<IMolecule> mol;
 	private final List<String> properties = new LinkedList<>();
+	private int initSize = 1;
 
 	static {
 		final Reflections reflections = new Reflections("it.unibo.alchemist");
@@ -72,33 +77,40 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 		}
 	}
 	
+	private <R> void tokenize(final List<R> result, final String base, final Function<String, R> supplier) {
+		final StringTokenizer tk = new StringTokenizer(base, propertySeparators);
+		while (tk.hasMoreElements()) {
+			result.add(supplier.apply(tk.nextToken()));
+		}
+	}
+	
 	@Override
 	protected double[] getProperties(final IEnvironment<T> env, final INode<T> sample, final IReaction<T> r, final ITime time, final long step) {
 		if (!HashUtils.pointerEquals(propertyCache, property)) {
 			propertyCache = property;
 			properties.clear();
-			final StringTokenizer tk = new StringTokenizer(propertyCache, propertySeparators);
-			while (tk.hasMoreElements()) {
-				properties.add(tk.nextToken());
-			}
+			tokenize(properties, propertyCache, Function.identity());
 		}
-		if (!HashUtils.pointerEquals(lsaCache, molecule)) {
-			lsaCache = molecule;
-			mol = incarnation.getCurrent().createMolecule(lsaCache);
+		if (!HashUtils.pointerEquals(molCache, molecule)) {
+			molCache = molecule;
+			mol = new ArrayList<>();
+			tokenize(mol, molCache, s -> incarnation.getCurrent().createMolecule(s));
 		}
-		final double[] base;
+		final TDoubleList res = new TDoubleArrayList(initSize);
+		if (trackId) {
+			res.add(sample.getId());
+		}
 		if (trackPos) {
 			final IPosition pos = env.getPosition(sample);
-			base = pos.getCartesianCoordinates();
-		} else {
-			base = ArrayUtils.EMPTY_DOUBLE_ARRAY;
+			res.add(pos.getCartesianCoordinates());
 		}
-		final double[] res = Arrays.copyOf(base, base.length + properties.size());
-		int i = base.length;
-		for (final String prop : properties) {
-			res[i++] = incarnation.getCurrent().getProperty(sample, mol, prop);
+		for (final IMolecule m : mol) {
+			for (final String prop : properties) {
+				res.add(incarnation.getCurrent().getProperty(sample, m, prop));
+			}
 		}
-		return res;
+		initSize = res.size();
+		return res.toArray();
 	}
 
 	/**
