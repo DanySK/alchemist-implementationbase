@@ -1,30 +1,40 @@
-/**
+/*
+ * Copyright (C) 2010-2014, Danilo Pianini and contributors
+ * listed in the project's pom.xml file.
  * 
+ * This file is part of Alchemist, and is distributed under the terms of
+ * the GNU General Public License, with a linking exception, as described
+ * in the file LICENSE in the Alchemist distribution's top directory.
  */
 package it.unibo.alchemist.boundary.monitors;
 
+import it.unibo.alchemist.model.interfaces.IEnvironment;
+import it.unibo.alchemist.model.interfaces.IMolecule;
+import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Incarnation;
+import it.unibo.alchemist.utils.L;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.danilopianini.lang.CollectionWithCurrentElement;
 import org.danilopianini.lang.HashUtils;
 import org.danilopianini.lang.ImmutableCollectionWithCurrentElement;
 import org.danilopianini.view.ExportForGUI;
 import org.reflections.Reflections;
 
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.model.interfaces.Incarnation;
-import it.unibo.alchemist.utils.L;
-
 /**
  * @author Danilo Pianini
+ *
+ * @param <T>
  */
 @ExportInspector
 public class NodeInspector<T> extends AbstractNodeInspector<T> {
@@ -33,8 +43,10 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 
 	private static final List<Incarnation> INCARNATIONS = new LinkedList<>();
 	
-	@ExportForGUI(nameToExport="Incarnation")
+	@ExportForGUI(nameToExport = "Incarnation")
 	private transient CollectionWithCurrentElement<Incarnation> incarnation = new ImmutableCollectionWithCurrentElement<>(INCARNATIONS, INCARNATIONS.get(0));
+	@ExportForGUI(nameToExport = "Track position")
+	private boolean trackPos;
 	@ExportForGUI(nameToExport = "Molecule")
 	private String molecule = "";
 	@ExportForGUI(nameToExport = "Properties")
@@ -74,15 +86,19 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 			lsaCache = molecule;
 			mol = incarnation.getCurrent().createMolecule(lsaCache);
 		}
-		if (mol != null) {
-			final double[] res = new double[properties.size()];
-			int i = 0;
-			for (final String prop : properties) {
-				res[i++] = incarnation.getCurrent().getProperty(sample, mol, prop);
-			}
-			return res;
+		final double[] base;
+		if (trackPos) {
+			final IPosition pos = env.getPosition(sample);
+			base = pos.getCartesianCoordinates();
+		} else {
+			base = ArrayUtils.EMPTY_DOUBLE_ARRAY;
 		}
-		return new double[0];
+		final double[] res = Arrays.copyOf(base, base.length + properties.size());
+		int i = base.length;
+		for (final String prop : properties) {
+			res[i++] = incarnation.getCurrent().getProperty(sample, mol, prop);
+		}
+		return res;
 	}
 
 	protected CollectionWithCurrentElement<Incarnation> getIncarnation() {
