@@ -60,8 +60,8 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 	private final List<String> properties = new LinkedList<>();
 
 	static {
-		final Reflections REFLECTIONS = new Reflections("it.unibo.alchemist");
-		for(final Class<? extends Incarnation> clazz: REFLECTIONS.getSubTypesOf(Incarnation.class)) {
+		final Reflections reflections = new Reflections("it.unibo.alchemist");
+		for (final Class<? extends Incarnation> clazz : reflections.getSubTypesOf(Incarnation.class)) {
 			try {
 				INCARNATIONS.add(clazz.newInstance());
 			} catch (InstantiationException e) {
@@ -101,36 +101,62 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 		return res;
 	}
 
+	/**
+	 * @return the incarnation
+	 */
 	protected CollectionWithCurrentElement<Incarnation> getIncarnation() {
 		return incarnation;
 	}
 
-	protected void setIncarnation(final CollectionWithCurrentElement<Incarnation> incarnation) {
-		this.incarnation = incarnation;
+	/**
+	 * @param inc
+	 *            the incarnation
+	 */
+	protected void setIncarnation(final CollectionWithCurrentElement<Incarnation> inc) {
+		this.incarnation = inc;
 	}
 
-	protected String getLsa() {
+	/**
+	 * @return the molecule
+	 */
+	protected String getMolecule() {
 		return molecule;
 	}
 
-	protected void setLsa(final String lsa) {
-		this.molecule = lsa;
+	/**
+	 * @param m
+	 *            the molecule
+	 */
+	protected void setMolecule(final String m) {
+		this.molecule = m;
 	}
 
+	/**
+	 * @return the property
+	 */
 	protected String getProperty() {
 		return property;
 	}
 
-	protected void setProperty(final String property) {
-		this.property = property;
+	/**
+	 * @param prop the property
+	 */
+	protected void setProperty(final String prop) {
+		this.property = prop;
 	}
 
+	/**
+	 * @return the property separators
+	 */ 
 	protected String getPropertySeparators() {
 		return propertySeparators;
 	}
 
-	protected void setPropertySeparators(final String propertySeparators) {
-		this.propertySeparators = propertySeparators;
+	/**
+	 * @param pSep the property separators
+	 */
+	protected void setPropertySeparators(final String pSep) {
+		this.propertySeparators = pSep;
 	}
 	
 	private void readObject(final ObjectInputStream s) throws ClassNotFoundException, IOException {
