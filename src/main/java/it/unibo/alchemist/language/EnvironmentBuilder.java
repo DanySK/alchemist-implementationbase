@@ -26,9 +26,10 @@ import it.unibo.alchemist.model.interfaces.ITime;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -63,13 +64,12 @@ import org.xml.sax.SAXException;
  * @param <T>
  *            concentration type
  */
-public class EnvironmentBuilder<T> implements Serializable {
+public class EnvironmentBuilder<T> {
 
 	private static final String DEFAULT_PACKAGE = "it.unibo.alchemist.";
 	private static final String LINKINGRULES_DEFAULT_PACKAGE = DEFAULT_PACKAGE + "model.implementations.linkingrules.";
 	private static final String NAME = "name";
 	private static final String REACTIONS_DEFAULT_PACKAGE = DEFAULT_PACKAGE + "model.implementations.reactions.";
-	private static final long serialVersionUID = -476178229422781485L;
 	private static final String TEXT = "#text";
 	private static final String TYPE = "type";
 	private static final Class<?>[] TYPES = new Class<?>[] { List.class, Integer.TYPE, Double.TYPE, Boolean.TYPE, Character.TYPE, Byte.TYPE, Short.TYPE, Long.TYPE, Float.TYPE };
@@ -84,7 +84,7 @@ public class EnvironmentBuilder<T> implements Serializable {
 	private Class<?> positionClass;
 	private RandomEngine random;
 	private IEnvironment<T> result;
-	private final String xmlFile;
+	private final InputStream xmlFile;
 
 	static {
 		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Byte.class,  Byte.TYPE}, Number::byteValue));
@@ -100,9 +100,31 @@ public class EnvironmentBuilder<T> implements Serializable {
 	 * 
 	 * @param xmlFilePath
 	 *            the file to interpret
+	 * @throws FileNotFoundException 
 	 */
-	public EnvironmentBuilder(final String xmlFilePath) {
-		xmlFile = xmlFilePath;
+	public EnvironmentBuilder(final String xmlFilePath) throws FileNotFoundException {
+		this(new File(xmlFilePath));
+	}
+
+	/**
+	 * Builds a new XML interpreter.
+	 * 
+	 * @param xml
+	 *            the file to interpret
+	 * @throws FileNotFoundException 
+	 */
+	public EnvironmentBuilder(final File xml) throws FileNotFoundException {
+		this(new FileInputStream(xml));
+	}
+
+	/**
+	 * Builds a new XML interpreter.
+	 * 
+	 * @param xmlStream
+	 *            the input stream to interpret
+	 */
+	public EnvironmentBuilder(final InputStream xmlStream) {
+		xmlFile = xmlStream;
 	}
 
 	private IAction<T> buildAction(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
@@ -164,84 +186,79 @@ public class EnvironmentBuilder<T> implements Serializable {
 	 */
 	public void buildEnvironment() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, SAXException, IOException, ParserConfigurationException {
 		mutex.acquireUninterruptibly();
-		if (new File(xmlFile).exists()) {
-			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			final DocumentBuilder builder = factory.newDocumentBuilder();
-			final Document doc = builder.parse(xmlFile);
-			debug("Starting processing");
-			random = null;
-			final Node root = doc.getFirstChild();
-			if (root.getNodeName().equals("environment") && doc.getChildNodes().getLength() == 1) {
-				final NamedNodeMap atts = root.getAttributes();
-				String type = atts.getNamedItem(TYPE).getNodeValue();
-				type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.environments." + type;
-				result = coreOperations(new ConcurrentHashMap<String, Object>(), root, type, null);
-				synchronized (result) {
-					envMutex.drainPermits();
-					envMutex.release();
-					final Node nameNode = atts.getNamedItem(NAME);
-					final String name = nameNode == null ? "" : nameNode.getNodeValue();
-					final Map<String, Object> env = new ConcurrentHashMap<String, Object>();
-					env.put("ENV", result);
-					if (!name.equals("")) {
-						env.put(name, result);
-					}
-					final NodeList children = root.getChildNodes();
-					for (int i = 0; i < children.getLength(); i++) {
-						final Node son = children.item(i);
-						final String kind = son.getNodeName();
-						debug(kind);
-						if (!kind.equals(TEXT)) {
-							final Node sonNameAttr = son.getAttributes().getNamedItem(NAME);
-							final String sonName = sonNameAttr == null ? "" : sonNameAttr.getNodeValue();
-							Object sonInstance = null;
-							if (kind.equals("molecule")) {
-								sonInstance = buildMolecule(son, env);
-							} else if (kind.equals("concentration")) {
-								if (concentrationClass == null) {
-									setConcentration(son);
-								}
-							} else if (kind.equals("position")) {
-								if (positionClass == null) {
-									setPosition(son);
-								}
-							} else if (kind.equals("random")) {
-								setRandom(son, env);
-							} else if (kind.equals("linkingrule")) {
-								result.setLinkingRule(buildLinkingRule(son, env));
-							} else if (kind.equals("condition")) {
-								sonInstance = buildCondition(son, env);
-							} else if (kind.equals("action")) {
-								sonInstance = buildAction(son, env);
-							} else if (kind.equals("reaction")) {
-								sonInstance = buildReaction(son, env);
-							} else if (kind.equals("node")) {
-								final INode<T> node = buildNode(son, env);
-								final IPosition pos = buildPosition(son, env);
-								sonInstance = node;
-								result.addNode(node, pos);
-							} else if (kind.equals("time")) {
-								sonInstance = buildTime(son, env);
+		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder builder = factory.newDocumentBuilder();
+		final Document doc = builder.parse(xmlFile);
+		debug("Starting processing");
+		random = null;
+		final Node root = doc.getFirstChild();
+		if (root.getNodeName().equals("environment") && doc.getChildNodes().getLength() == 1) {
+			final NamedNodeMap atts = root.getAttributes();
+			String type = atts.getNamedItem(TYPE).getNodeValue();
+			type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.environments." + type;
+			result = coreOperations(new ConcurrentHashMap<String, Object>(), root, type, null);
+			synchronized (result) {
+				envMutex.drainPermits();
+				envMutex.release();
+				final Node nameNode = atts.getNamedItem(NAME);
+				final String name = nameNode == null ? "" : nameNode.getNodeValue();
+				final Map<String, Object> env = new ConcurrentHashMap<String, Object>();
+				env.put("ENV", result);
+				if (!name.equals("")) {
+					env.put(name, result);
+				}
+				final NodeList children = root.getChildNodes();
+				for (int i = 0; i < children.getLength(); i++) {
+					final Node son = children.item(i);
+					final String kind = son.getNodeName();
+					debug(kind);
+					if (!kind.equals(TEXT)) {
+						final Node sonNameAttr = son.getAttributes().getNamedItem(NAME);
+						final String sonName = sonNameAttr == null ? "" : sonNameAttr.getNodeValue();
+						Object sonInstance = null;
+						if (kind.equals("molecule")) {
+							sonInstance = buildMolecule(son, env);
+						} else if (kind.equals("concentration")) {
+							if (concentrationClass == null) {
+								setConcentration(son);
 							}
-							if (sonInstance != null) {
-								env.put(sonName, sonInstance);
+						} else if (kind.equals("position")) {
+							if (positionClass == null) {
+								setPosition(son);
 							}
+						} else if (kind.equals("random")) {
+							setRandom(son, env);
+						} else if (kind.equals("linkingrule")) {
+							result.setLinkingRule(buildLinkingRule(son, env));
+						} else if (kind.equals("condition")) {
+							sonInstance = buildCondition(son, env);
+						} else if (kind.equals("action")) {
+							sonInstance = buildAction(son, env);
+						} else if (kind.equals("reaction")) {
+							sonInstance = buildReaction(son, env);
+						} else if (kind.equals("node")) {
+							final INode<T> node = buildNode(son, env);
+							final IPosition pos = buildPosition(son, env);
+							sonInstance = node;
+							result.addNode(node, pos);
+						} else if (kind.equals("time")) {
+							sonInstance = buildTime(son, env);
+						}
+						if (sonInstance != null) {
+							env.put(sonName, sonInstance);
 						}
 					}
-					/*
-					 * This operation forces a reset to the random generator. It
-					 * ensures that if the user reloads the same random seed she
-					 * passed in the specification, the simulation will still be
-					 * reproducible.
-					 */
-					random.setSeed(random.getSeed());
 				}
-			} else {
-				error("XML does not contain one and one only environment.");
-//				result = null;
+				/*
+				 * This operation forces a reset to the random generator. It
+				 * ensures that if the user reloads the same random seed she
+				 * passed in the specification, the simulation will still be
+				 * reproducible.
+				 */
+				random.setSeed(random.getSeed());
 			}
 		} else {
-			throw new FileNotFoundException();
+			error("XML does not contain one and one only environment.");
 		}
 		mutex.release();
 	}
