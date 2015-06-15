@@ -21,7 +21,7 @@ public abstract class AbstractLocalAction<T> extends AbstractAction<T> {
 	private static final long serialVersionUID = -2347988094066090756L;
 
 	/**
-	 * @param node
+	 * @param node the local node
 	 */
 	protected AbstractLocalAction(final INode<T> node) {
 		super(node);
