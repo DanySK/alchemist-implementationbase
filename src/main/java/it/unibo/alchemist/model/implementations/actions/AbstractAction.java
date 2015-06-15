@@ -17,6 +17,7 @@ import it.unibo.alchemist.model.interfaces.INode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -64,6 +65,26 @@ public abstract class AbstractAction<T> implements IAction<T> {
 	 */
 	protected void addModifiedMolecule(final IMolecule m) {
 		influenced.add(m);
+	}
+	
+	/**
+	 * @param m
+	 *            the molecule
+	 * @return true if the local node contains the molecule
+	 */
+	protected final boolean nodeContains(final IMolecule m) {
+		return getNode().contains(m);
+	}
+
+	/**
+	 * @param m
+	 *            the molecule
+	 * @return An {@link Optional} with the value of concentration, or an empty
+	 *         {@link Optional} if the molecule if
+	 *         {@link INode#getConcentration(IMolecule)} returns null
+	 */
+	protected final Optional<T> getConcentration(final IMolecule m) {
+		return Optional.ofNullable(getNode().getConcentration(m));
 	}
 
 }
