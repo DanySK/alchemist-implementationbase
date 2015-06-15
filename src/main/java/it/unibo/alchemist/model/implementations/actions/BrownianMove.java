@@ -57,7 +57,7 @@ public class BrownianMove<T> extends AbstractMoveNode<T> {
 	}
 	
 	private double genRandom() {
-		return rng.nextFloat() - 0.5f;
+		return rng.nextFloat() - 0.5;
 	}
 
 	/**
