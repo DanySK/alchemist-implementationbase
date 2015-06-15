@@ -79,11 +79,28 @@ public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
 	public IEnvironment<T> getEnvironment() {
 		return env;
 	}
-
+	
+	/**
+	 * @return the position of the local node
+	 */
+	protected final IPosition getCurrentPosition() {
+		return getNodePosition(getNode());
+	}
+	
 	/**
 	 * @return The next position where to move, in relative coordinates with
 	 *         respect to the current node position.
 	 */
 	public abstract IPosition getNextPosition();
 
+	/**
+	 * Given a node, computes its position.
+	 * 
+	 * @param n the node
+	 * @return the position of the node
+	 */
+	protected final IPosition getNodePosition(final INode<T> n) {
+		return env.getPosition(n);
+	}
+	
 }
