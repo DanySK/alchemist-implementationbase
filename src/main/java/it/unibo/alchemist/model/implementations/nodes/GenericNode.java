@@ -16,6 +16,7 @@ import it.unibo.alchemist.model.interfaces.INode;
 import it.unibo.alchemist.model.interfaces.IReaction;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -181,11 +182,15 @@ public abstract class GenericNode<T> implements INode<T> {
 	}
 
 	@Override
+	public void removeConcentration(final IMolecule mol) {
+		molecules.remove(mol);
+	}
+
+	@Override
 	public String toString() {
 		return molecules.toString();
 	}
 	
-
 	@Override
 	public void forEach(final Consumer<? super IReaction<T>> action) {
 		reactions.forEach(action);
@@ -198,8 +203,7 @@ public abstract class GenericNode<T> implements INode<T> {
 	
 	@Override
 	public Map<IMolecule, T> getContents() {
-		return new ConcurrentHashMap<>(molecules);
+		return Collections.unmodifiableMap(molecules);
 	}
-
-
+	
 }
