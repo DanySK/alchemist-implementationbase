@@ -116,7 +116,7 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 	/**
 	 * @return the incarnation
 	 */
-	protected CollectionWithCurrentElement<Incarnation> getIncarnation() {
+	public CollectionWithCurrentElement<Incarnation> getIncarnation() {
 		return incarnation;
 	}
 
@@ -124,14 +124,14 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 	 * @param inc
 	 *            the incarnation
 	 */
-	protected void setIncarnation(final CollectionWithCurrentElement<Incarnation> inc) {
+	public void setIncarnation(final CollectionWithCurrentElement<Incarnation> inc) {
 		this.incarnation = inc;
 	}
 
 	/**
 	 * @return the molecule
 	 */
-	protected String getMolecule() {
+	public String getMolecule() {
 		return molecule;
 	}
 
@@ -139,35 +139,35 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 	 * @param m
 	 *            the molecule
 	 */
-	protected void setMolecule(final String m) {
+	public void setMolecule(final String m) {
 		this.molecule = m;
 	}
 
 	/**
 	 * @return the property
 	 */
-	protected String getProperty() {
+	public String getProperty() {
 		return property;
 	}
 
 	/**
 	 * @param prop the property
 	 */
-	protected void setProperty(final String prop) {
+	public void setProperty(final String prop) {
 		this.property = prop;
 	}
 
 	/**
 	 * @return the property separators
 	 */ 
-	protected String getPropertySeparators() {
+	public String getPropertySeparators() {
 		return propertySeparators;
 	}
 
 	/**
 	 * @param pSep the property separators
 	 */
-	protected void setPropertySeparators(final String pSep) {
+	public void setPropertySeparators(final String pSep) {
 		this.propertySeparators = pSep;
 	}
 	

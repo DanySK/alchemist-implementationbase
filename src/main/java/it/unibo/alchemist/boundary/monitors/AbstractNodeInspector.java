@@ -40,7 +40,8 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 	private int minId = Integer.MIN_VALUE;
 	private int maxId = Integer.MAX_VALUE;
 
-	protected Iterable<INode<T>> computeSamples(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step){
+	@Override
+	protected Iterable<INode<T>> computeSamples(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step) {
 		final boolean filter = filterids;
 		if (filter && !idrange.equals(idrangeCache)) {
 			try {
@@ -67,7 +68,7 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 	/**
 	 * @return filterids
 	 */
-	protected boolean isFilteringIDs() {
+	public boolean isFilteringIDs() {
 		return filterids;
 	}
 
@@ -75,14 +76,14 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 	 * @param f
 	 *            filterids
 	 */
-	protected void setFilterids(final boolean f) {
+	public void setFilterids(final boolean f) {
 		this.filterids = f;
 	}
 
 	/**
 	 * @return idrange
 	 */
-	protected String getIdrange() {
+	public String getIdrange() {
 		return idrange;
 	}
 
@@ -90,14 +91,14 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 	 * @param range
 	 *            range
 	 */
-	protected void setIdrange(final String range) {
+	public void setIdrange(final String range) {
 		this.idrange = range;
 	}
 
 	/**
 	 * @return filter nan
 	 */
-	protected boolean isFilteringNaN() {
+	public boolean isFilteringNaN() {
 		return filternan;
 	}
 
@@ -105,7 +106,7 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
 	 * @param f
 	 *            filter nan
 	 */
-	protected void setFilternan(final boolean f) {
+	public void setFilternan(final boolean f) {
 		this.filternan = f;
 	}
 

@@ -8,9 +8,18 @@
  */
 package it.unibo.alchemist.boundary.monitors;
 
+import it.unibo.alchemist.boundary.interfaces.OutputMonitor;
+import it.unibo.alchemist.model.implementations.times.DoubleTime;
+import it.unibo.alchemist.model.interfaces.IEnvironment;
+import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.utils.L;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -19,13 +28,6 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.math3.util.FastMath;
 import org.danilopianini.lang.RangedInteger;
 import org.danilopianini.view.ExportForGUI;
-
-import it.unibo.alchemist.boundary.interfaces.OutputMonitor;
-import it.unibo.alchemist.model.implementations.times.DoubleTime;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.utils.L;
 
 /**
  * @author Danilo Pianini
@@ -89,8 +91,8 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
 				writer.close();
 			}
 			try {
-				writer = new PrintStream(new File(fpCache));
-			} catch (FileNotFoundException e) {
+				writer = new PrintStream(new File(fpCache), StandardCharsets.UTF_8.name());
+			} catch (FileNotFoundException | UnsupportedEncodingException e) {
 				L.error(e);
 			}
 		}
@@ -110,21 +112,17 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
 		}
 		if (logTime) {
 			writer.print(time.toDouble());
-			writeSeparator();
+			writer.print(separator);
 		}
 		if (logStep) {
 			writer.print(step);
-			writeSeparator();
+			writer.print(separator);
 		}
 		for (final double d : extractValues(env, r, time, step)) {
 			writer.print(d);
-			writeSeparator();
+			writer.print(separator);
 		}
 		writer.println();
-	}
-
-	private void writeSeparator() {
-		writer.print(separator);
 	}
 
 	/**

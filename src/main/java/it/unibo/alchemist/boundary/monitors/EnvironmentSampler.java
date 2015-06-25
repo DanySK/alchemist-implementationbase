@@ -10,8 +10,8 @@ package it.unibo.alchemist.boundary.monitors;
 
 import gnu.trove.TDoubleCollection;
 import gnu.trove.list.array.TDoubleArrayList;
-import it.unibo.alchemist.model.implementations.utils.Aggregator;
-import it.unibo.alchemist.model.implementations.utils.SubNaN;
+import it.unibo.alchemist.boundary.monitors.utils.Aggregator;
+import it.unibo.alchemist.boundary.monitors.utils.SubNaN;
 import it.unibo.alchemist.model.interfaces.IEnvironment;
 import it.unibo.alchemist.model.interfaces.IReaction;
 import it.unibo.alchemist.model.interfaces.ITime;
@@ -33,7 +33,7 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
 	@ExportForGUI(nameToExport = "Data aggregator")
 	private Aggregator aggregator = Aggregator.MEAN;
 	@ExportForGUI(nameToExport = "Filter NaN with")
-	private SubNaN subnan = SubNaN.Eliminate;
+	private SubNaN subnan = SubNaN.ELIMINATE;
 
 	@Override
 	protected final double[] extractValues(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step) {
@@ -42,7 +42,7 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
 			final double[] prop = getProperties(env, sample, r, time, step);
 			for (int i = 0; i < prop.length; i++) {
 				if (Double.isNaN(prop[i])) {
-					if (!subnan.equals(SubNaN.Eliminate)) {
+					if (!subnan.equals(SubNaN.ELIMINATE)) {
 						expandList(vpn, i);
 						vpn.get(i).add(subnan.getSubstitutionValue());
 					}
@@ -87,7 +87,7 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
 	/**
 	 * @return aggregator
 	 */
-	protected Aggregator getAggregator() {
+	public Aggregator getAggregator() {
 		return aggregator;
 	}
 
@@ -95,14 +95,14 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
 	 * @param a
 	 *            aggregator
 	 */
-	protected void setAggregator(final Aggregator a) {
+	public void setAggregator(final Aggregator a) {
 		this.aggregator = a;
 	}
 
 	/**
 	 * @return SubNaN
 	 */
-	protected SubNaN getSubnan() {
+	public SubNaN getSubnan() {
 		return subnan;
 	}
 
@@ -110,7 +110,7 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
 	 * @param snan
 	 *            subnan
 	 */
-	protected void setSubnan(final SubNaN snan) {
+	public void setSubnan(final SubNaN snan) {
 		this.subnan = snan;
 	}
 

@@ -6,7 +6,7 @@
  * the GNU General Public License, with a linking exception, as described
  * in the file LICENSE in the Alchemist distribution's top directory.
  */
-package it.unibo.alchemist.model.implementations.utils;
+package it.unibo.alchemist.boundary.monitors.utils;
 
 /**
  * @author Danilo Pianini
@@ -16,7 +16,7 @@ public enum SubNaN {
 	/**
 	 * 
 	 */
-	Eliminate(Double.NaN), Zero(0), One(1), Infinity(Double.POSITIVE_INFINITY), MinusInfinity(Double.NEGATIVE_INFINITY);
+	ELIMINATE(Double.NaN), ZERO(0), ONE(1), POSITIVE_INFINITY(Double.POSITIVE_INFINITY), NEGATIVE_INFINITY(Double.NEGATIVE_INFINITY);
 
 	private final double val;
 

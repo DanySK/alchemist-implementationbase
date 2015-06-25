@@ -29,6 +29,7 @@ import org.danilopianini.view.ExportForGUI;
 /**
  * @author Danilo Pianini
  *
+ * @param <T>
  */
 @ExportInspector
 public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T> {
@@ -43,9 +44,9 @@ public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T
 	@ExportForGUI(nameToExport = "Samples (positive integer)")
 	private String samples = Integer.toString(DEFAULT_SAMPLES);
 
-	private String sCache = null;
-	private Iterable<IPosition> result = null;
-	private IEnvironment<T> envCache = null;
+	private String sCache;
+	private Iterable<IPosition> result;
+	private IEnvironment<T> envCache;
 
 	@Override
 	protected Iterable<IPosition> computeSamples(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step) {
@@ -81,6 +82,21 @@ public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * @return samples
+	 */
+	public String getSamples() {
+		return samples;
+	}
+
+	/**
+	 * @param sample
+	 *            Number of samples
+	 */
+	public void setSamples(final String sample) {
+		this.samples = sample;
 	}
 
 }

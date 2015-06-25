@@ -6,7 +6,7 @@
  * the GNU General Public License, with a linking exception, as described
  * in the file LICENSE in the Alchemist distribution's top directory.
  */
-package it.unibo.alchemist.model.implementations.utils;
+package it.unibo.alchemist.boundary.monitors.utils;
 
 import gnu.trove.TDoubleCollection;
 import gnu.trove.list.TDoubleList;
@@ -157,6 +157,11 @@ public enum Aggregator {
 		stat = s;
 	}
 
+	/**
+	 * @param data
+	 *            the data to aggregate
+	 * @return the aggregated version
+	 */
 	public double[] aggregate(final List<TDoubleCollection> data) {
 		if (data == null) {
 			throw new IllegalArgumentException();

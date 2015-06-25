@@ -43,28 +43,28 @@ public class NumberOfNodesNextToANode<T> extends EnvironmentInspector<T> {
 	/**
 	 * @return id
 	 */
-	protected String getId() {
+	public String getId() {
 		return id;
 	}
 
 	/**
 	 * @param idn id
 	 */
-	protected void setId(final String idn) {
+	public void setId(final String idn) {
 		this.id = idn;
 	}
 
 	/**
 	 * @return range
 	 */
-	protected String getRange() {
+	public String getRange() {
 		return range;
 	}
 
 	/**
 	 * @param rng range
 	 */
-	protected void setRange(final String rng) {
+	public void setRange(final String rng) {
 		this.range = rng;
 	}
 
