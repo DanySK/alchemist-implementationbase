@@ -40,7 +40,16 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
 	private static final long serialVersionUID = -6609357608585315L;
 	private static final int OOM_RANGE = 24;
 
-	private static enum Mode {
+	/**
+	 * The sampling mode.
+	 * 
+	 * @author Danilo Pianini
+	 *
+	 */
+	public static enum Mode {
+		/**
+		 * 
+		 */
 		TIME, STEP
 	}
 
