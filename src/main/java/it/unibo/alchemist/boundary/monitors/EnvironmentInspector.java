@@ -128,98 +128,98 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
 	/**
 	 * @return file path
 	 */
-	protected String getFilePath() {
+	public String getFilePath() {
 		return filePath;
 	}
 
 	/**
 	 * @param fp file path
 	 */
-	protected void setFilePath(final String fp) {
+	public void setFilePath(final String fp) {
 		this.filePath = fp;
 	}
 
 	/**
 	 * @return separator
 	 */
-	protected String getSeparator() {
+	public String getSeparator() {
 		return separator;
 	}
 
 	/**
 	 * @param s separator
 	 */
-	protected void setSeparator(final String s) {
+	public void setSeparator(final String s) {
 		this.separator = s;
 	}
 
 	/**
 	 * @return true if the {@link EnvironmentInspector} is logging time
 	 */
-	protected boolean isLoggingTime() {
+	public boolean isLoggingTime() {
 		return logTime;
 	}
 
 	/**
 	 * @param lt true if you want to log time
 	 */
-	protected void setLogTime(final boolean lt) {
+	public void setLogTime(final boolean lt) {
 		this.logTime = lt;
 	}
 
 	/**
 	 * @return true if the {@link EnvironmentInspector} is logging steps
 	 */
-	protected boolean isLoggingStep() {
+	public boolean isLoggingStep() {
 		return logStep;
 	}
 
 	/**
 	 * @param ls true if you want to log steps
 	 */
-	protected void setLogStep(final boolean ls) {
+	public void setLogStep(final boolean ls) {
 		this.logStep = ls;
 	}
 
 	/**
 	 * @return current mode
 	 */
-	protected Mode getMode() {
+	public Mode getMode() {
 		return mode;
 	}
 
 	/**
 	 * @param m the mode
 	 */
-	protected void setMode(final Mode m) {
+	public void setMode(final Mode m) {
 		this.mode = m;
 	}
 
 	/**
 	 * @return order of magnitude of the sapling interval
 	 */
-	protected RangedInteger getIntervalOrderOfMagnitude() {
+	public RangedInteger getIntervalOrderOfMagnitude() {
 		return intervaloom;
 	}
 
 	/**
 	 * @param ioom order of magnitude of the sapling interval
 	 */
-	protected void setIntervaloom(final RangedInteger ioom) {
+	public void setIntervaloom(final RangedInteger ioom) {
 		this.intervaloom = ioom;
 	}
 
 	/**
 	 * @return sampling interval
 	 */
-	protected RangedInteger getInterval() {
+	public RangedInteger getInterval() {
 		return interval;
 	}
 
 	/**
 	 * @param i sampling interval
 	 */
-	protected void setInterval(final RangedInteger i) {
+	public void setInterval(final RangedInteger i) {
 		this.interval = i;
 	}
 
