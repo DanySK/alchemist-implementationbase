@@ -107,6 +107,7 @@ eclipse {
 // FindBugs configuration
 
 findbugs {
+	toolVersion = "2.0.3"
 	ignoreFailures = true
 	effort = "max"
 	reportLevel = "low"
