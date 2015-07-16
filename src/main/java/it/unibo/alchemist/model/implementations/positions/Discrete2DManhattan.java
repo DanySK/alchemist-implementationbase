@@ -11,7 +11,7 @@
  */
 package it.unibo.alchemist.model.implementations.positions;
 
-import org.danilopianini.lang.Couple;
+import org.apache.commons.math3.util.Pair;
 
 import it.unibo.alchemist.exceptions.UncomparableDistancesException;
 import it.unibo.alchemist.model.interfaces.IPosition;
@@ -46,11 +46,11 @@ public class Discrete2DManhattan implements IPosition {
 	}
 
 	@Override
-	public Couple<IPosition> buildBoundingBox(final double r) {
+	public Pair<IPosition, IPosition> buildBoundingBox(final double r) {
 		final int range = (int) r;
 		final Discrete2DManhattan bl = new Discrete2DManhattan(xCoord - range, yCoord - range);
 		final Discrete2DManhattan ur = new Discrete2DManhattan(xCoord + range, yCoord + range);
-		return new Couple<IPosition>(bl, ur);
+		return new Pair<>(bl, ur);
 	}
 
 	@Override

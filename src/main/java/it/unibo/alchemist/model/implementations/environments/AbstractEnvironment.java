@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.math3.util.FastMath;
-import org.danilopianini.lang.Couple;
+import org.apache.commons.math3.util.Pair;
 import org.danilopianini.lang.QuadTree;
 
 /**
@@ -164,7 +164,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	}
 
 	private Stream<INode<T>> getAllNodesInRange(final IPosition center, final double range) {
-		final Couple<IPosition> boundingBox = center.buildBoundingBox(range);
+		final Pair<IPosition, IPosition> boundingBox = center.buildBoundingBox(range);
 		final double[] bl = boundingBox.getFirst().getCartesianCoordinates();
 		final IPosition ul = boundingBox.getSecond();
 		final double rx = ul.getCoordinate(0) - bl[0];

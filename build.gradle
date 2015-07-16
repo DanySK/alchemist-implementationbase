@@ -8,6 +8,9 @@ apply plugin: 'maven'
 apply plugin: 'build-dashboard'
 apply plugin: 'signing'
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 task wrapper(type: Wrapper) {
     gradleVersion = gradleVersionToUse
 }
@@ -28,6 +31,9 @@ configurations {
     doc {
         transitive false
     }
+    compile {
+        exclude module: 'org.eclipse.xtext.dependencies'
+    }
     doclet
 }
 
@@ -39,6 +45,9 @@ dependencies {
     compile "org.reflections:reflections:$reflectionsVersion"
     
     testCompile "junit:junit:$junitVersion"
+    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
+    testRuntime "it.unibo.alchemist:alchemist-enginedependentmodel:$engineDepVersion"
+    testRuntime "it.unibo.alchemist:alchemist-incarnations:$incarnationsVersion"
     
     doclet "org.jboss.apiviz:apiviz:$apivizVersion"
     

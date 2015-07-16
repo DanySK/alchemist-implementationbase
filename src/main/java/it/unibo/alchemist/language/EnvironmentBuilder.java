@@ -25,31 +25,25 @@ import it.unibo.alchemist.model.interfaces.IReaction;
 import it.unibo.alchemist.model.interfaces.ITime;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
-import java.util.function.Function;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.danilopianini.lang.Pair;
 import org.danilopianini.lang.PrimitiveUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -64,7 +58,7 @@ import org.xml.sax.SAXException;
  * @param <T>
  *            concentration type
  */
-public class EnvironmentBuilder<T> {
+public final class EnvironmentBuilder<T> implements Callable<IEnvironment<T>> {
 
 	private static final String DEFAULT_PACKAGE = "it.unibo.alchemist.";
 	private static final String LINKINGRULES_DEFAULT_PACKAGE = DEFAULT_PACKAGE + "model.implementations.linkingrules.";
@@ -73,49 +67,13 @@ public class EnvironmentBuilder<T> {
 	private static final String TEXT = "#text";
 	private static final String TYPE = "type";
 	private static final Class<?>[] TYPES = new Class<?>[] { List.class, Integer.TYPE, Double.TYPE, Boolean.TYPE, Character.TYPE, Byte.TYPE, Short.TYPE, Long.TYPE, Float.TYPE };
-	private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
-	private static final List<Pair<Class<?>[], Function<Number, ?>>> NUMBER_CASTER = new LinkedList<>();
 	
 	private Class<?> concentrationClass;
 	private final Random internalRandom = new Random();
-	private final Semaphore mutex = new Semaphore(1);
-	private final Semaphore envMutex = new Semaphore(0);
-	private final Semaphore randMutex = new Semaphore(0);
 	private Class<?> positionClass;
 	private RandomEngine random;
 	private IEnvironment<T> result;
 	private final InputStream xmlFile;
-
-	static {
-		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Byte.class,  Byte.TYPE}, Number::byteValue));
-		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Short.class,  Short.TYPE}, Number::shortValue));
-		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Integer.class,  Integer.TYPE}, Number::intValue));
-		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Long.class,  Long.TYPE}, Number::longValue));
-		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Float.class,  Float.TYPE}, Number::floatValue));
-		NUMBER_CASTER.add(new Pair<>(new Class<?>[] {Double.class,  Double.TYPE}, Number::doubleValue));
-	}
-
-	/**
-	 * Builds a new XML interpreter.
-	 * 
-	 * @param xmlFilePath
-	 *            the file to interpret
-	 * @throws FileNotFoundException 
-	 */
-	public EnvironmentBuilder(final String xmlFilePath) throws FileNotFoundException {
-		this(new File(xmlFilePath));
-	}
-
-	/**
-	 * Builds a new XML interpreter.
-	 * 
-	 * @param xml
-	 *            the file to interpret
-	 * @throws FileNotFoundException 
-	 */
-	public EnvironmentBuilder(final File xml) throws FileNotFoundException {
-		this(new FileInputStream(xml));
-	}
 
 	/**
 	 * Builds a new XML interpreter.
@@ -123,10 +81,11 @@ public class EnvironmentBuilder<T> {
 	 * @param xmlStream
 	 *            the input stream to interpret
 	 */
-	public EnvironmentBuilder(final InputStream xmlStream) {
+	private EnvironmentBuilder(final InputStream xmlStream) {
+		super();
 		xmlFile = xmlStream;
 	}
-
+	
 	private IAction<T> buildAction(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
 		return buildK(son, env, "it.unibo.alchemist.model.implementations.actions.");
 	}
@@ -184,8 +143,7 @@ public class EnvironmentBuilder<T> {
 	 * @throws ParserConfigurationException
 	 *             should not happen.
 	 */
-	public void buildEnvironment() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, SAXException, IOException, ParserConfigurationException {
-		mutex.acquireUninterruptibly();
+	private void buildEnvironment() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, SAXException, IOException, ParserConfigurationException {
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder builder = factory.newDocumentBuilder();
 		final Document doc = builder.parse(xmlFile);
@@ -198,8 +156,6 @@ public class EnvironmentBuilder<T> {
 			type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.environments." + type;
 			result = coreOperations(new ConcurrentHashMap<String, Object>(), root, type, null);
 			synchronized (result) {
-				envMutex.drainPermits();
-				envMutex.release();
 				final Node nameNode = atts.getNamedItem(NAME);
 				final String name = nameNode == null ? "" : nameNode.getNodeValue();
 				final Map<String, Object> env = new ConcurrentHashMap<String, Object>();
@@ -260,7 +216,6 @@ public class EnvironmentBuilder<T> {
 		} else {
 			error("XML does not contain one and one only environment.");
 		}
-		mutex.release();
 	}
 
 	private ILinkingRule<T> buildLinkingRule(final Node rootLinkingRule, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
@@ -406,26 +361,11 @@ public class EnvironmentBuilder<T> {
 	}
 
 	/**
-	 * Warning: the environment may not be completely initialized yet.
-	 * 
-	 * @return the environment
-	 */
-	public IEnvironment<T> getEnvironment() {
-		envMutex.acquireUninterruptibly();
-		final IEnvironment<T> res = result;
-		envMutex.release();
-		return res;
-	}
-
-	/**
 	 * @return the random engine. It is consequently possible to force a new
 	 *         seed after the environment creation.
 	 */
 	public RandomEngine getRandomEngine() {
-		randMutex.acquireUninterruptibly();
-		final RandomEngine res = random;
-		randMutex.release();
-		return res;
+		return random;
 	}
 
 	private void populateReaction(final Map<String, Object> subenv, final IReaction<T> res, final Node rootReact) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
@@ -499,9 +439,6 @@ public class EnvironmentBuilder<T> {
 		final Class<?> randomEngineClass = Class.forName(type);
 		final List<Constructor<RandomEngine>> consList = unsafeExtractConstructors(randomEngineClass);
 		random = tryToBuild(consList, params, env, null);
-		randMutex.drainPermits();
-		randMutex.release();
-
 	}
 
 	/**
@@ -543,29 +480,6 @@ public class EnvironmentBuilder<T> {
 		return res;
 	}
 
-	private static Set<Class<?>> getWrapperTypes() {
-		final HashSet<Class<?>> ret = new HashSet<Class<?>>();
-		ret.add(Boolean.class);
-		ret.add(Character.class);
-		ret.add(Byte.class);
-		ret.add(Short.class);
-		ret.add(Integer.class);
-		ret.add(Long.class);
-		ret.add(Float.class);
-		ret.add(Double.class);
-		ret.add(Void.class);
-		return ret;
-	}
-
-	/**
-	 * @param clazz
-	 *            the class to test
-	 * @return true if the Class is a wrapper
-	 */
-	public static boolean isWrapperType(final Class<?> clazz) {
-		return WRAPPER_TYPES.stream().anyMatch(t -> clazz.isAssignableFrom(t));
-	}
-
 	private static Optional<Number> extractNumber(final String n) {
 		long resl = 0;
 		double resd = 0;
@@ -598,7 +512,7 @@ public class EnvironmentBuilder<T> {
 			}
 			return random;
 		}
-		if (clazz.isPrimitive() || isWrapperType(clazz)) {
+		if (clazz.isPrimitive() || PrimitiveUtils.classIsWrapper(clazz)) {
 			debug(val + " is a primitive or a wrapper: " + clazz);
 			if ((clazz.isAssignableFrom(Boolean.TYPE) || clazz.isAssignableFrom(Boolean.class)) && (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false"))) {
 				return Boolean.parseBoolean(val);
@@ -700,4 +614,27 @@ public class EnvironmentBuilder<T> {
 		}
 		return list;
 	}
+
+	private static <T> Future<IEnvironment<T>> build(final EnvironmentBuilder<T> builder) {
+		return ForkJoinPool.commonPool().submit(builder);
+	}
+	
+	/**
+	 * @param xml
+	 *            the stream to process
+	 * @param <T>
+	 *            the concentration type
+	 * 
+	 * @return a {@link Future} result containing an {@link IEnvironment}
+	 */
+	public static <T> Future<IEnvironment<T>> build(final InputStream xml) {
+		return build(new EnvironmentBuilder<>(xml));
+	}
+
+	@Override
+	public IEnvironment<T> call() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, SAXException, IOException, ParserConfigurationException {
+		buildEnvironment();
+		return result;
+	}
+
 }

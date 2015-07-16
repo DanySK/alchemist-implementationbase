@@ -13,7 +13,7 @@ package it.unibo.alchemist.model.implementations.positions;
 
 import java.util.Arrays;
 
-import org.danilopianini.lang.Couple;
+import org.apache.commons.math3.util.Pair;
 import org.danilopianini.lang.HashUtils;
 
 import it.unibo.alchemist.exceptions.UncomparableDistancesException;
@@ -75,14 +75,14 @@ public class ContinuousGenericEuclidean implements IPosition {
 	}
 
 	@Override
-	public Couple<IPosition> buildBoundingBox(final double range) {
+	public Pair<IPosition, IPosition> buildBoundingBox(final double range) {
 		final double[] bl = Arrays.copyOf(c, c.length);
 		final double[] ur = Arrays.copyOf(c, c.length);
 		for (int i = 0; i < c.length; i++) {
 			bl[i] -= range;
 			ur[i] += range;
 		}
-		return new Couple<IPosition>(new ContinuousGenericEuclidean(bl), new ContinuousGenericEuclidean(ur));
+		return new Pair<>(new ContinuousGenericEuclidean(bl), new ContinuousGenericEuclidean(ur));
 	}
 
 	@Override
@@ -157,15 +157,7 @@ public class ContinuousGenericEuclidean implements IPosition {
 	 */
 	public boolean samePosition(final IPosition o) {
 		final double[] p = o.getCartesianCoordinates();
-		if (c.length == p.length) {
-			for (int i = 0; i < c.length; i++) {
-				if (p[i] != c[i]) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
+		return Arrays.equals(c, p);
 	}
 
 	@Override
