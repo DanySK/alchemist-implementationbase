@@ -19,7 +19,6 @@ import it.unibo.alchemist.model.interfaces.IEnvironment;
 import it.unibo.alchemist.model.interfaces.IEnvironment2DWithObstacles;
 import it.unibo.alchemist.model.interfaces.INeighborhood;
 import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IObstacle2D;
 import it.unibo.alchemist.model.interfaces.IPosition;
 
 import java.awt.geom.Area;
@@ -33,19 +32,35 @@ import java.util.List;
 
 import org.danilopianini.lang.HashUtils;
 
+/**
+ * Connects two nodes if, throwing a beam from one to the other, there exists at
+ * least one path entirely inside the beam that connects the two nodes. This
+ * rule is ideal for environments with obstacles, where the user wants some
+ * tolerance in connection breaking.
+ * 
+ * @author Danilo Pianini
+ *
+ * @param <T>
+ */
 public class ConnectionBeam<T> extends EuclideanDistance<T> {
 
 	private static final long serialVersionUID = -6303232843110524434L;
+	private static final int COORDS = 6;
 	private final double range;
-	private transient IEnvironment2DWithObstacles<IObstacle2D, T> oenv;
+	private transient IEnvironment2DWithObstacles<?, ?> oenv;
 	private transient Area obstacles = new Area();
 
+	/**
+	 * @param radius
+	 *            beam maximum length
+	 * @param beamSize
+	 *            beam span (tolerance)
+	 */
 	public ConnectionBeam(final double radius, final double beamSize) {
 		super(radius);
 		range = beamSize;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
 		final INeighborhood<T> normal = super.computeNeighborhood(center, env);
@@ -53,7 +68,7 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 			if (!(env instanceof IEnvironment2DWithObstacles<?, ?>)) {
 				return normal;
 			}
-			oenv = (IEnvironment2DWithObstacles<IObstacle2D, T>) env;
+			oenv = (IEnvironment2DWithObstacles<?, ?>) env;
 			obstacles.reset();
 			oenv.getObstacles().forEach((obs) -> {
 				/*
@@ -80,7 +95,7 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 		return normal;
 	}
 
-	protected boolean projectedBeamOvercomesObstacle(final IPosition pos1, final IPosition pos2) {
+	private boolean projectedBeamOvercomesObstacle(final IPosition pos1, final IPosition pos2) {
 		final double p1x = pos1.getCoordinate(0);
 		final double p1y = pos1.getCoordinate(1);
 		final double p2x = pos2.getCoordinate(0);
@@ -121,7 +136,7 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
 		final List<Path2D.Double> subareas = new ArrayList<>();
 		Path2D.Double curpath = new Path2D.Double();
 		final PathIterator pi = beam.getPathIterator(null);
-		final double[] coords = new double[6];
+		final double[] coords = new double[COORDS];
 		while (!pi.isDone()) {
 			switch(pi.currentSegment(coords)) {
 			case PathIterator.SEG_MOVETO :
