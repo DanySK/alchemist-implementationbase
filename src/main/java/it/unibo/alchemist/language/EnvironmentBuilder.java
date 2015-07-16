@@ -27,6 +27,7 @@ import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
@@ -58,7 +58,12 @@ import org.xml.sax.SAXException;
  * @param <T>
  *            concentration type
  */
-public final class EnvironmentBuilder<T> implements Callable<IEnvironment<T>> {
+/**
+ * @author danysk
+ *
+ * @param <T>
+ */
+public final class EnvironmentBuilder<T> {
 
 	private static final String DEFAULT_PACKAGE = "it.unibo.alchemist.";
 	private static final String LINKINGRULES_DEFAULT_PACKAGE = DEFAULT_PACKAGE + "model.implementations.linkingrules.";
@@ -360,14 +365,6 @@ public final class EnvironmentBuilder<T> implements Callable<IEnvironment<T>> {
 		return buildTime(son, env, random);
 	}
 
-	/**
-	 * @return the random engine. It is consequently possible to force a new
-	 *         seed after the environment creation.
-	 */
-	public RandomEngine getRandomEngine() {
-		return random;
-	}
-
 	private void populateReaction(final Map<String, Object> subenv, final IReaction<T> res, final Node rootReact) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
 		final NodeList children = rootReact.getChildNodes();
 		final ArrayList<ICondition<T>> conditions = new ArrayList<ICondition<T>>();
@@ -615,8 +612,11 @@ public final class EnvironmentBuilder<T> implements Callable<IEnvironment<T>> {
 		return list;
 	}
 
-	private static <T> Future<IEnvironment<T>> build(final EnvironmentBuilder<T> builder) {
-		return ForkJoinPool.commonPool().submit(builder);
+	private static <T> Future<Result<T>> build(final EnvironmentBuilder<T> builder) {
+		return ForkJoinPool.commonPool().submit(() -> {
+			builder.buildEnvironment();
+			return Result.build(builder.result, builder.random);
+		});
 	}
 	
 	/**
@@ -627,14 +627,45 @@ public final class EnvironmentBuilder<T> implements Callable<IEnvironment<T>> {
 	 * 
 	 * @return a {@link Future} result containing an {@link IEnvironment}
 	 */
-	public static <T> Future<IEnvironment<T>> build(final InputStream xml) {
+	public static <T> Future<Result<T>> build(final InputStream xml) {
 		return build(new EnvironmentBuilder<>(xml));
 	}
 
-	@Override
-	public IEnvironment<T> call() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException, SAXException, IOException, ParserConfigurationException {
-		buildEnvironment();
-		return result;
+	/**
+	 * 
+	 * @author Danilo Pianini
+	 *
+	 * @param <T>
+	 */
+	public static final class Result<T> implements Serializable {
+
+		private static final long serialVersionUID = -8733706297447819226L;
+		private final IEnvironment<T> env;
+		private final RandomEngine rng;
+		
+		private Result(final IEnvironment<T> environment, final RandomEngine random) {
+			env = environment;
+			rng = random;
+		}
+		
+		/**
+		 * @return the {@link IEnvironment}
+		 */
+		public IEnvironment<T> getEnvironment() {
+			return env;
+		}
+		
+		/**
+		 * @return the {@link RandomEngine} used internally
+		 */
+		public RandomEngine getRandomEngine() {
+			return rng;
+		}
+		
+		private static <T> Result<T> build(final IEnvironment<T> environment, final RandomEngine random) {
+			return new Result<>(environment, random);
+		}
+		
 	}
 
 }

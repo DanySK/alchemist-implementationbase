@@ -1,6 +1,7 @@
 package it.unibo.alchemist.test;
 
 import it.unibo.alchemist.language.EnvironmentBuilder;
+import it.unibo.alchemist.language.EnvironmentBuilder.Result;
 import it.unibo.alchemist.model.interfaces.IEnvironment;
 import it.unibo.alchemist.model.interfaces.INode;
 import it.unibo.alchemist.model.interfaces.IReaction;
@@ -28,8 +29,10 @@ public class TestEnvironmentBuilder {
 	 */
 	@Test
 	public <T> void testBuildEnvironment() throws InterruptedException, ExecutionException, TimeoutException {
-		final Future<IEnvironment<T>> fenv = EnvironmentBuilder.build(TestEnvironmentBuilder.class.getResourceAsStream("/wsn-10000-dd.xml"));
-		final IEnvironment<T> env = fenv.get(1, TimeUnit.MINUTES);
+		final Future<Result<T>> fenv = EnvironmentBuilder.build(TestEnvironmentBuilder.class.getResourceAsStream("/wsn-10000-dd.xml"));
+		final Result<T> res = fenv.get(1, TimeUnit.MINUTES);
+		Assert.assertNotNull(res.getRandomEngine());
+		final IEnvironment<T> env = res.getEnvironment();
 		Assert.assertNotNull(env);
 		Assert.assertNotNull(env.getNodes());
 		Assert.assertTrue(env.getNodesNumber() > 0);
