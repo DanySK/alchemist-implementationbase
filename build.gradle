@@ -46,9 +46,9 @@ dependencies {
     compile "org.reflections:reflections:$reflectionsVersion"
     
     testCompile "junit:junit:$junitVersion"
-//    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
-//    testRuntime "it.unibo.alchemist:alchemist-enginedependentmodel:$engineDepVersion"
-//    testRuntime "it.unibo.alchemist:alchemist-incarnations:$incarnationsVersion"
+    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
+    testRuntime "it.unibo.alchemist:alchemist-enginedependentmodel:$engineDepVersion"
+    testRuntime "it.unibo.alchemist:alchemist-incarnations:$incarnationsVersion"
     
     doclet "org.jboss.apiviz:apiviz:$apivizVersion"
     
