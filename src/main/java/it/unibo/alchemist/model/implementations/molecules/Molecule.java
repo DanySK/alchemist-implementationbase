@@ -11,8 +11,9 @@
  */
 package it.unibo.alchemist.model.implementations.molecules;
 
+import org.danilopianini.lang.util.FasterString;
+
 import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.utils.FasterString;
 
 
 /**
@@ -72,6 +73,9 @@ public class Molecule implements IMolecule {
 		return n + "[ID: " + n.hashToString() + "]";
 	}
 	
+	/**
+	 * @return a {@link FasterString} version of this {@link Molecule}
+	 */
 	public final FasterString toFasterString() {
 		return n;
 	}

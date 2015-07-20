@@ -39,15 +39,16 @@ configurations {
 
 dependencies {
     compile "org.danilopianini:javalib:$javalibVersion"
+    compile "org.danilopianini:javalib-java7:$javalib7Version"
     compile "it.unibo.alchemist:alchemist-baselib:$baselibVersion"
     compile "it.unibo.alchemist:alchemist-interfaces:$interfacesVersion"
     compile "it.unibo.alchemist:alchemist-time:$timeVersion"
     compile "org.reflections:reflections:$reflectionsVersion"
     
     testCompile "junit:junit:$junitVersion"
-    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
-    testRuntime "it.unibo.alchemist:alchemist-enginedependentmodel:$engineDepVersion"
-    testRuntime "it.unibo.alchemist:alchemist-incarnations:$incarnationsVersion"
+//    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
+//    testRuntime "it.unibo.alchemist:alchemist-enginedependentmodel:$engineDepVersion"
+//    testRuntime "it.unibo.alchemist:alchemist-incarnations:$incarnationsVersion"
     
     doclet "org.jboss.apiviz:apiviz:$apivizVersion"
     
