@@ -30,6 +30,12 @@ repositories {
 configurations.all {
   	resolutionStrategy {
 	    failOnVersionConflict()
+	    /*
+	     * Things that work with guava 18.0 also work with guava 19.0-rc1
+	     */
+	    dependencySubstitution {
+	    	substitute module('com.google.guava:guava:18.0') with module('com.google.guava:guava:19.0-rc1')
+	    }
     }
 }
 
