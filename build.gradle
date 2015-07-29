@@ -8,8 +8,8 @@ apply plugin: 'maven'
 apply plugin: 'build-dashboard'
 apply plugin: 'signing'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = "$JDKVersion"
+targetCompatibility = "$JDKVersion"
 
 task wrapper(type: Wrapper) {
     gradleVersion = gradleVersionToUse
