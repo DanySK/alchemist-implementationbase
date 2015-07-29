@@ -30,11 +30,9 @@ repositories {
 configurations.all {
   	resolutionStrategy {
 	    failOnVersionConflict()
-	    /*
-	     * Things that work with guava 18.0 also work with guava 19.0-rc1
-	     */
 	    dependencySubstitution {
 	    	substitute module('com.google.guava:guava:18.0') with module('com.google.guava:guava:19.0-rc1')
+	    	substitute module('com.google.protobuf:protobuf-java:2.4.1') with module('com.google.protobuf:protobuf-java:2.6.1')
 	    }
     }
 }
