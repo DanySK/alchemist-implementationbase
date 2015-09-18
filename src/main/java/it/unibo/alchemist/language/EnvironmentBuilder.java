@@ -11,19 +11,6 @@ package it.unibo.alchemist.language;
 import static it.unibo.alchemist.utils.L.debug;
 import static it.unibo.alchemist.utils.L.error;
 import static it.unibo.alchemist.utils.L.warn;
-import it.unibo.alchemist.external.cern.jet.random.engine.RandomEngine;
-import it.unibo.alchemist.model.implementations.times.DoubleTime;
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IConcentration;
-import it.unibo.alchemist.model.interfaces.ICondition;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.ILinkingRule;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +24,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -50,6 +38,20 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import it.unibo.alchemist.external.cern.jet.random.engine.RandomEngine;
+import it.unibo.alchemist.model.implementations.times.DoubleTime;
+import it.unibo.alchemist.model.interfaces.IAction;
+import it.unibo.alchemist.model.interfaces.IConcentration;
+import it.unibo.alchemist.model.interfaces.ICondition;
+import it.unibo.alchemist.model.interfaces.IEnvironment;
+import it.unibo.alchemist.model.interfaces.ILinkingRule;
+import it.unibo.alchemist.model.interfaces.IMolecule;
+import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 /**
  * @author Danilo Pianini
@@ -613,10 +615,13 @@ public final class EnvironmentBuilder<T> {
 	}
 
 	private static <T> Future<Result<T>> build(final EnvironmentBuilder<T> builder) {
-		return ForkJoinPool.commonPool().submit(() -> {
+		final ExecutorService ex = Executors.newSingleThreadExecutor();
+		final Future<Result<T>> result = ex.submit(() -> {
 			builder.buildEnvironment();
 			return Result.build(builder.result, builder.random);
 		});
+		ex.shutdown();
+		return result;
 	}
 	
 	/**
