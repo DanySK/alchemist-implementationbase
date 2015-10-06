@@ -8,13 +8,6 @@
  */
 package it.unibo.alchemist.model.implementations.environments;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
-import it.unibo.alchemist.exceptions.UncomparableDistancesException;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.utils.L;
-
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,6 +20,12 @@ import java.util.stream.Stream;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.danilopianini.lang.QuadTree;
+
+import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unibo.alchemist.model.interfaces.IEnvironment;
+import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.utils.L;
 
 /**
  * Very generic and basic implementation for an environment. Basically, only
@@ -72,7 +71,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	 * @param p
 	 *            the position
 	 */
-	protected void addNodeInternally(final INode<T> node, final IPosition p) {
+	protected final void addNodeInternally(final INode<T> node, final IPosition p) {
 		setPosition(node, p);
 		nodes.put(node.getId(), node);
 		if (!spatialIndex.insert(node, p.getCoordinate(0), p.getCoordinate(1))) {
@@ -123,16 +122,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	public double getDistanceBetweenNodes(final INode<T> n1, final INode<T> n2) {
 		final IPosition p1 = getPosition(n1);
 		final IPosition p2 = getPosition(n2);
-		if (p1 != null && p2 != null) {
-			try {
-				return p1.getDistanceTo(p2);
-			} catch (UncomparableDistancesException e) {
-				L.warn("Uncomparable distances. NaN will be returned, see the stacktrace below to fix.");
-				L.warn(e);
-			}
-		}
-		L.warn("One or both nodes are not in the environment. NaN will be returned.");
-		return Double.NaN;
+		return p1.getDistanceTo(p2);
 	}
 
 	@Override
