@@ -8,24 +8,21 @@
  */
 package it.unibo.alchemist.model.implementations.environments;
 
-import java.awt.geom.Rectangle2D;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unibo.alchemist.model.interfaces.IEnvironment;
+import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.IPosition;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
-import org.danilopianini.lang.QuadTree;
-
-import gnu.trove.map.hash.TIntObjectHashMap;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.utils.L;
+import org.danilopianini.lang.SpatialIndex;
 
 /**
  * Very generic and basic implementation for an environment. Basically, only
@@ -45,8 +42,16 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	private final TIntObjectHashMap<IPosition> nodeToPos = new TIntObjectHashMap<>();
 	private final TIntObjectHashMap<INode<T>> nodes = new TIntObjectHashMap<INode<T>>();
 	private String separator = System.getProperty("line.separator");
-	private QuadTree<INode<T>> spatialIndex = new QuadTree<>(0, 0, 0, 0, 10);
+	private final SpatialIndex<INode<T>> spatialIndex;
 
+	/**
+	 * @param internalIndex the {@link SpatialIndex} to use in order to efficiently retrieve nodes.
+	 */
+	protected AbstractEnvironment(final SpatialIndex<INode<T>> internalIndex) {
+		assert internalIndex != null;
+		spatialIndex = internalIndex;
+	}
+	
 	/**
 	 * Adds or changes a position entry in the position map.
 	 * 
@@ -55,10 +60,13 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	 * @param p
 	 *            its new position
 	 */
-	protected void setPosition(final INode<T> n, final IPosition p) {
+	protected final void setPosition(final INode<T> n, final IPosition p) {
 		final IPosition pos = nodeToPos.put(n.getId(), p);
-		if (pos != null && !spatialIndex.move(n, pos.getCoordinate(0), pos.getCoordinate(1), p.getCoordinate(0), p.getCoordinate(1))) {
-			resetSpatialIndex();
+		if (pos != null && !spatialIndex.move(n, pos.getCartesianCoordinates(), p.getCartesianCoordinates())) {
+			throw new IllegalArgumentException(
+					"Tried to move a node not previously present in the environment: \n"
+					+ "Node: " + n + "\n"
+					+ "Requested position" + p);
 		}
 	}
 
@@ -74,25 +82,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	protected final void addNodeInternally(final INode<T> node, final IPosition p) {
 		setPosition(node, p);
 		nodes.put(node.getId(), node);
-		if (!spatialIndex.insert(node, p.getCoordinate(0), p.getCoordinate(1))) {
-			resetSpatialIndex();
-		}
-	}
-
-	private void resetSpatialIndex() {
-		final double[] offset = getOffset();
-		final double[] size = getSize();
-		final double minX = offset[0];
-		final double minY = offset[1];
-		final double maxX = FastMath.nextUp(minX + size[0]);
-		final double maxY = FastMath.nextUp(minY + size[1]);
-		spatialIndex = new QuadTree<>(minX, minY, maxX, maxY, 10);
-		for (final INode<T> n : nodes.valueCollection()) {
-			final IPosition p = getPosition(n);
-			if (!spatialIndex.insert(n, p.getCoordinate(0), p.getCoordinate(1))) {
-				L.warn("Environment size computation is broken.");
-			}
-		}
+		spatialIndex.insert(node, p.getCartesianCoordinates());
 	}
 
 	/**
@@ -102,12 +92,12 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	 *            the node whose position will be removed
 	 * @return the position removed
 	 */
-	protected IPosition getAndDeletePosition(final INode<T> node) {
+	protected final IPosition getAndDeletePosition(final INode<T> node) {
 		return nodeToPos.remove(node.getId());
 	}
 
 	@Override
-	public IPosition getPosition(final INode<T> node) {
+	public final IPosition getPosition(final INode<T> node) {
 		return nodeToPos.get(node.getId());
 	}
 
@@ -115,7 +105,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	public void removeNode(final INode<T> node) {
 		nodes.remove(node.getId());
 		final IPosition pos = nodeToPos.remove(node.getId());
-		spatialIndex.delete(node, pos.getCoordinate(0), pos.getCoordinate(1));
+		spatialIndex.remove(node, pos.getCartesianCoordinates());
 	}
 
 	@Override
@@ -150,16 +140,19 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 		/*
 		 * Remove the center node
 		 */
-		return getAllNodesInRange(getPosition(center), range).filter((n) -> !n.equals(center)).collect(Collectors.toList());
+		return getAllNodesInRange(getPosition(center), range)
+				.filter((n) -> !n.equals(center))
+				.collect(Collectors.toList());
 	}
 
 	private Stream<INode<T>> getAllNodesInRange(final IPosition center, final double range) {
-		final Pair<IPosition, IPosition> boundingBox = center.buildBoundingBox(range);
-		final double[] bl = boundingBox.getFirst().getCartesianCoordinates();
-		final IPosition ul = boundingBox.getSecond();
-		final double rx = ul.getCoordinate(0) - bl[0];
-		final double ry = ul.getCoordinate(1) - bl[1];
-		return spatialIndex.query(new Rectangle2D.Double(bl[0], bl[1], rx, ry)).parallelStream().filter((n) -> getPosition(n).getDistanceTo(center) <= range);
+		final List<IPosition> boundingBox = center.buildBoundingBox(range);
+		assert boundingBox.size() == getDimensions();
+		final double[][] queryArea = new double[getDimensions()][];
+		IntStream.range(0, getDimensions()).parallel()
+			.forEach(i -> queryArea[i] = boundingBox.get(i).getCartesianCoordinates());
+		return spatialIndex.query(queryArea).parallelStream()
+				.filter((n) -> getPosition(n).getDistanceTo(center) <= range);
 	}
 
 	@Override

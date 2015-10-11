@@ -11,14 +11,16 @@
  */
 package it.unibo.alchemist.model.implementations.positions;
 
-import java.util.Arrays;
-
-import org.apache.commons.math3.util.Pair;
-import org.danilopianini.lang.HashUtils;
-
 import it.unibo.alchemist.exceptions.UncomparableDistancesException;
 import it.unibo.alchemist.model.interfaces.IPosition;
 import it.unibo.alchemist.utils.MathUtils;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.danilopianini.lang.HashUtils;
 
 /**
  * @author Danilo Pianini
@@ -32,57 +34,40 @@ public class ContinuousGenericEuclidean implements IPosition {
 	private static final long serialVersionUID = 2993200108153260352L;
 	private final double[] c;
 	private int hash;
-
 	private String stringCache;
 
 	/**
-	 * Faster constructor for bidimensional positions.
-	 * 
-	 * @param x
-	 *            x position
-	 * @param y
-	 *            y position
-	 */
-	protected ContinuousGenericEuclidean(final double x, final double y) {
-		c = new double[] { x, y };
-		org.apache.commons.math3.util.MathUtils.checkFinite(c);
-	}
-
-	/**
-	 * Faster constructor for bidimensional positions.
-	 * 
-	 * @param x
-	 *            x position
-	 * @param y
-	 *            y position
-	 * @param z
-	 *            z position
-	 */
-	protected ContinuousGenericEuclidean(final double x, final double y, final double z) {
-		c = new double[] { x, y, z };
-		org.apache.commons.math3.util.MathUtils.checkFinite(c);
-	}
-
-	/**
-	 * Slower than other constructors. Prefer others for 2D and 3D positions.
 	 * 
 	 * @param coord
 	 *            the coordinates
 	 */
-	public ContinuousGenericEuclidean(final double[] coord) {
-		c = Arrays.copyOf(coord, coord.length);
+	public ContinuousGenericEuclidean(final double... coord) {
+		this(true, coord);
+	}
+	
+	private ContinuousGenericEuclidean(final boolean copy, final double... coord) {
+		if (copy) {
+			c = Arrays.copyOf(coord, coord.length);
+		} else {
+			c = coord;
+		}
 		org.apache.commons.math3.util.MathUtils.checkFinite(c);
 	}
 
 	@Override
-	public Pair<IPosition, IPosition> buildBoundingBox(final double range) {
-		final double[] bl = Arrays.copyOf(c, c.length);
-		final double[] ur = Arrays.copyOf(c, c.length);
-		for (int i = 0; i < c.length; i++) {
-			bl[i] -= range;
-			ur[i] += range;
-		}
-		return new Pair<>(new ContinuousGenericEuclidean(bl), new ContinuousGenericEuclidean(ur));
+	public List<IPosition> buildBoundingBox(final double range) {
+		return IntStream.range(0, getDimensions()).parallel()
+			.mapToObj(i -> {
+				final double[] coords = new double[c.length];
+				/*
+				 * Canonical base: always sum the range, but
+				 */
+				for (int j = 0; j < coords.length; j++) {
+					coords[j] = c[j] + (i == j ? -range : range);
+				}
+				return new ContinuousGenericEuclidean(false, coords);
+			})
+			.collect(Collectors.toList());
 	}
 
 	@Override
@@ -145,7 +130,7 @@ public class ContinuousGenericEuclidean implements IPosition {
 	@Override
 	public int hashCode() {
 		if (hash == 0) {
-			hash = HashUtils.djb2int32(c);
+			hash = HashUtils.hash32(c);
 		}
 		return hash;
 	}
@@ -166,6 +151,16 @@ public class ContinuousGenericEuclidean implements IPosition {
 			stringCache = Arrays.toString(c);
 		}
 		return stringCache;
+	}
+
+	@Override
+	public IPosition sum(final IPosition other) {
+		assert getDimensions() == other.getDimensions();
+		double[] res = other.getCartesianCoordinates();
+		for (int i = 0; i < res.length; i++) {
+			res[i] += c[i];
+		}
+		return new ContinuousGenericEuclidean(false, res);
 	}
 
 }

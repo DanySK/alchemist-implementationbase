@@ -11,10 +11,12 @@
  */
 package it.unibo.alchemist.model.implementations.positions;
 
-import org.apache.commons.math3.util.Pair;
-
 import it.unibo.alchemist.exceptions.UncomparableDistancesException;
 import it.unibo.alchemist.model.interfaces.IPosition;
+
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Danilo Pianini
@@ -26,7 +28,7 @@ import it.unibo.alchemist.model.interfaces.IPosition;
  *          is computed as Manhattan distance.
  * 
  */
-public class Discrete2DManhattan implements IPosition {
+public final class Discrete2DManhattan implements IPosition {
 
 	private static final int MASK = 0x0000FFFF;
 	private static final long serialVersionUID = 4773955346963361299L;
@@ -46,11 +48,11 @@ public class Discrete2DManhattan implements IPosition {
 	}
 
 	@Override
-	public Pair<IPosition, IPosition> buildBoundingBox(final double r) {
+	public List<IPosition> buildBoundingBox(final double r) {
 		final int range = (int) r;
 		final Discrete2DManhattan bl = new Discrete2DManhattan(xCoord - range, yCoord - range);
 		final Discrete2DManhattan ur = new Discrete2DManhattan(xCoord + range, yCoord + range);
-		return new Pair<>(bl, ur);
+		return Lists.newArrayList(bl, ur);
 	}
 
 	@Override
@@ -125,6 +127,16 @@ public class Discrete2DManhattan implements IPosition {
 	@Override
 	public String toString() {
 		return "[" + xCoord + "," + yCoord + "]";
+	}
+
+	@Override
+	public IPosition sum(final IPosition other) {
+		if (other instanceof Discrete2DManhattan) {
+			final Discrete2DManhattan o = (Discrete2DManhattan) other;
+			return new Discrete2DManhattan(xCoord + o.xCoord, yCoord + o.yCoord);
+		}
+		throw new IllegalArgumentException("You can not sum a " + getClass() + " with a " + other.getClass() + ". \n"
+				+ this + " can't be summed to " + other);
 	}
 
 }
