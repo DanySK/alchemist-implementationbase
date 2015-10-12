@@ -71,20 +71,24 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	}
 
 	/**
-	 * Updates position and other metadata for a new node. Subclasses should
-	 * call this method prior to implement their own addNode()
+	 * This method gets called once that the basic operations for a node
+	 * addition have been performed by {@link AbstractEnvironment}.
 	 * 
 	 * @param node
 	 *            the node to add
 	 * @param p
 	 *            the position
 	 */
-	protected final void addNodeInternally(final INode<T> node, final IPosition p) {
+	protected abstract void nodeAdded(final INode<T> node, final IPosition p);
+
+	@Override
+	public final void addNode(final INode<T> node, final IPosition p) {
 		setPosition(node, p);
 		nodes.put(node.getId(), node);
 		spatialIndex.insert(node, p.getCartesianCoordinates());
+		nodeAdded(node, p);
 	}
-
+	
 	/**
 	 * Deletes a position from the map.
 	 * 
@@ -100,12 +104,24 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 	public final IPosition getPosition(final INode<T> node) {
 		return nodeToPos.get(node.getId());
 	}
+	
+	/**
+	 * This method gets called once that the basic operations for a node
+	 * removal have been performed by {@link AbstractEnvironment}.
+	 * 
+	 * @param node
+	 *            the node to add
+	 * @param pos
+	 *            the position
+	 */
+	protected abstract void nodeRemoved(INode<T> node, IPosition pos);
 
 	@Override
-	public void removeNode(final INode<T> node) {
+	public final void removeNode(final INode<T> node) {
 		nodes.remove(node.getId());
 		final IPosition pos = nodeToPos.remove(node.getId());
 		spatialIndex.remove(node, pos.getCartesianCoordinates());
+		nodeRemoved(node, pos);
 	}
 
 	@Override
