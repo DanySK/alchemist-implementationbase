@@ -8,6 +8,7 @@
  */
 package it.unibo.alchemist.model.implementations.probabilitydistributions;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
 import it.unibo.alchemist.model.interfaces.IEnvironment;
 import it.unibo.alchemist.model.interfaces.ITime;
@@ -50,13 +51,18 @@ public class DiracComb<T> extends AbstractDistribution<T> {
 	}
 
 	@Override
-	protected void updateStatus(final ITime curTime, final boolean executed, final double param, final IEnvironment<T> env) {
+	protected void updateStatus(
+			final ITime curTime,
+			final boolean executed,
+			final double param,
+			final IEnvironment<T> env) {
 		if (executed) {
 			setTau(new DoubleTime(curTime.toDouble() + timeInterval));
 		}
 	}
 
 	@Override
+	@SuppressFBWarnings("CN_IDIOM_NO_SUPER_CALL")
 	public DiracComb<T> clone() {
 		return new DiracComb<>(getNextOccurence(), 1 / timeInterval);
 	}
