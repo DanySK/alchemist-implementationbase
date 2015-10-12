@@ -20,8 +20,12 @@ public enum SubNaN {
 
 	private final double val;
 
-	private SubNaN(final double d) {
-		val = d;
+	/**
+	 * @param substitution
+	 *            the value that should be substituted to NaN
+	 */
+	SubNaN(final double substitution) {
+		val = substitution;
 	}
 
 	/**

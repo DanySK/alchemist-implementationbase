@@ -153,7 +153,7 @@ public enum Aggregator {
 	private final UnivariateStatistic stat;
 	private final Semaphore mutex = new Semaphore(1);
 
-	private Aggregator(final UnivariateStatistic s) {
+	Aggregator(final UnivariateStatistic s) {
 		stat = s;
 	}
 
