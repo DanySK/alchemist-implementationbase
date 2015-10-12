@@ -3,19 +3,24 @@
  */
 package it.unibo.alchemist.model.implementations.probabilitydistributions;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
 import it.unibo.alchemist.model.interfaces.IEnvironment;
 import it.unibo.alchemist.model.interfaces.ITime;
 
 /**
- * @author Danilo Pianini
- *
+ * @param <T>
+ *            Concentration type
  */
 public class Trigger<T> extends AbstractDistribution<T> {
 
 	private static final long serialVersionUID = 5207992119302525618L;
 	private boolean dryRunDone;
 	
+	/**
+	 * @param event
+	 *            the time at which the event will happen
+	 */
 	public Trigger(final ITime event) {
 		super(event);
 	}
@@ -34,6 +39,7 @@ public class Trigger<T> extends AbstractDistribution<T> {
 	}
 
 	@Override
+	@SuppressFBWarnings("CN_IDIOM_NO_SUPER_CALL")
 	public Trigger<T> clone() {
 		return new Trigger<>(getNextOccurence());
 	}
