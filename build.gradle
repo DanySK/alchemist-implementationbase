@@ -56,6 +56,7 @@ dependencies {
     compile "it.unibo.alchemist:alchemist-interfaces:$interfacesVersion"
     compile "it.unibo.alchemist:alchemist-time:$timeVersion"
     compile "org.reflections:reflections:$reflectionsVersion"
+    compile "com.google.code.findbugs:findbugs:$findBugsVersion"
     
     testCompile "junit:junit:$junitVersion"
 //    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
@@ -132,6 +133,7 @@ findbugs {
 	ignoreFailures = true
 	effort = "max"
 	reportLevel = "low"
+	excludeFilterConfig = resources.text.fromFile("findbugsExcludes.xml")
 }
 
 tasks.withType(FindBugs) {
