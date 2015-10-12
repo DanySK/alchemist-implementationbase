@@ -21,6 +21,8 @@ import java.awt.geom.Rectangle2D;
 import org.apache.commons.math3.util.FastMath;
 import org.danilopianini.concurrency.ThreadLocalIdGenerator;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import static it.unibo.alchemist.utils.MathUtils.fuzzyEquals;
 import static it.unibo.alchemist.utils.MathUtils.fuzzyGreaterEquals;
 
@@ -32,6 +34,7 @@ import static it.unibo.alchemist.utils.MathUtils.fuzzyGreaterEquals;
  * @author Alexander Hristov
  * 
  */
+@SuppressFBWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
 public final class RectObstacle2D extends it.unibo.alchemist.external.com.infomatiq.jsi.Rectangle implements IObstacle2D {
 
 	private static final long serialVersionUID = -3552947311155196461L;
@@ -99,6 +102,7 @@ public final class RectObstacle2D extends it.unibo.alchemist.external.com.infoma
 		return new Continuous2DEuclidean(restricted);
 	}
 
+	@SuppressFBWarnings("PZLA_PREFER_ZERO_LENGTH_ARRAYS")
 	private double[] enforceBorders(final double startx, final double starty, final double endx, final double endy) {
 		/*
 		 * Check if the point is somehow inside the obstacle, and reply
@@ -134,6 +138,7 @@ public final class RectObstacle2D extends it.unibo.alchemist.external.com.infoma
 	}
 
 	@Override
+	@SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
 	public double[] nearestIntersection(final double startx, final double starty, final double endx, final double endy) {
 		final double nearx = MathUtils.nearest(startx, maxX, minX);
 		final double neary = MathUtils.nearest(starty, maxY, minY);
