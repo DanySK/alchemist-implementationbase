@@ -59,9 +59,6 @@ dependencies {
     compile "com.google.code.findbugs:findbugs:$findBugsVersion"
     
     testCompile "junit:junit:$junitVersion"
-    testRuntime "it.unibo.alchemist:alchemist-engine:$engineVersion"
-    testRuntime "it.unibo.alchemist:alchemist-enginedependentmodel:$engineDepVersion"
-    testRuntime "it.unibo.alchemist:alchemist-incarnation-sapere:$sapereVersion"
     
     doclet "org.jboss.apiviz:apiviz:$apivizVersion"
     
