@@ -32,7 +32,7 @@ import static it.unibo.alchemist.utils.MathUtils.fuzzyGreaterEquals;
  * @author Alexander Hristov
  * 
  */
-public class RectObstacle2D extends it.unibo.alchemist.external.com.infomatiq.jsi.Rectangle implements IObstacle2D {
+public final class RectObstacle2D extends it.unibo.alchemist.external.com.infomatiq.jsi.Rectangle implements IObstacle2D {
 
 	private static final long serialVersionUID = -3552947311155196461L;
 	private static final ThreadLocalIdGenerator SINGLETON = new ThreadLocalIdGenerator();
