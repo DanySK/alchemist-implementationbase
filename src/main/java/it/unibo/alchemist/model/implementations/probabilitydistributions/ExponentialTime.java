@@ -8,6 +8,7 @@
  */
 package it.unibo.alchemist.model.implementations.probabilitydistributions;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unibo.alchemist.external.cern.jet.random.Exponential;
 import it.unibo.alchemist.external.cern.jet.random.engine.RandomEngine;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
@@ -55,7 +56,13 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
 	}
 
 	@Override
-	public void updateStatus(final ITime curTime, final boolean executed, final double newpropensity, final IEnvironment<T> env) {
+	public void updateStatus(
+			final ITime curTime,
+			final boolean executed,
+			final double newpropensity,
+			final IEnvironment<T> env) {
+		assert !Double.isNaN(newpropensity);
+		assert !Double.isNaN(oldPropensity);
 		if (oldPropensity == 0 && newpropensity != 0) {
 			update(newpropensity, true, curTime);
 		} else if (oldPropensity != 0 && newpropensity != 0) {
@@ -66,7 +73,10 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
 		oldPropensity = newpropensity;
 	}
 	
+	@SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
 	private void update(final double newpropensity, final boolean isMu, final ITime curTime) {
+		assert !Double.isNaN(newpropensity);
+		assert !Double.isNaN(oldPropensity);
 		if (isMu) {
 			final ITime dt = genTime(newpropensity);
 			setTau(curTime.sum(dt));
@@ -90,6 +100,7 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
 	}
 
 	@Override
+	@SuppressFBWarnings("CN_IDIOM_NO_SUPER_CALL")
 	public ExponentialTime<T> clone() {
 		return new ExponentialTime<>(rate, getNextOccurence(), rand);
 	}
