@@ -46,7 +46,7 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
 	 * @author Danilo Pianini
 	 *
 	 */
-	public static enum Mode {
+	public enum Mode {
 		/**
 		 * 
 		 */
