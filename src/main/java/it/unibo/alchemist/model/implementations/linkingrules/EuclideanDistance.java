@@ -15,38 +15,35 @@ import it.unibo.alchemist.model.interfaces.INeighborhood;
 import it.unibo.alchemist.model.interfaces.INode;
 
 /**
- * @author Luca Mella
- * @author Danilo Pianini
- * 
- *         LinkingRule which connects nodes whose euclidean distance is shorter
- *         than a given radius.
+ * LinkingRule which connects nodes whose euclidean distance is shorter than a
+ * given radius.
  * 
  * @param <T>
  *            The type which describes the concentration of a molecule
  */
 public class EuclideanDistance<T> implements ILinkingRule<T> {
 
-	private static final long serialVersionUID = -405055780667941773L;
-	private final double range;
+    private static final long serialVersionUID = -405055780667941773L;
+    private final double range;
 
-	/**
-	 * @param radius
-	 *            connection radius
-	 */
-	public EuclideanDistance(final double radius) {
-		range = radius;
-	}
+    /**
+     * @param radius
+     *            connection radius
+     */
+    public EuclideanDistance(final double radius) {
+        range = radius;
+    }
 
-	@Override
-	public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-		return new Neighborhood<>(center, env.getNodesWithinRange(center, range), env);
-	}
+    @Override
+    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
+        return new Neighborhood<>(center, env.getNodesWithinRange(center, range), env);
+    }
 
-	/**
-	 * @return the range
-	 */
-	protected final double getRange() {
-		return range;
-	}
+    /**
+     * @return the range
+     */
+    protected final double getRange() {
+        return range;
+    }
 
 }

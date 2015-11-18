@@ -17,73 +17,71 @@ import it.unibo.alchemist.model.interfaces.TimeDistribution;
  * ensures that the distribution does not trigger events before its initial
  * scheduling time.
  * 
- * @author Danilo Pianini
- *
  * @param <T>
  */
 public abstract class AbstractDistribution<T> implements TimeDistribution<T> {
 
-	private static final long serialVersionUID = -8906648194668569179L;
-	private ITime tau;
-	private boolean schedulable;
-	private final ITime startTime;
+    private static final long serialVersionUID = -8906648194668569179L;
+    private ITime tau;
+    private boolean schedulable;
+    private final ITime startTime;
 
-	/**
-	 * @param start
-	 *            initial time
-	 */
-	public AbstractDistribution(final ITime start) {
-		tau = start;
-		startTime = start;
-	}
+    /**
+     * @param start
+     *            initial time
+     */
+    public AbstractDistribution(final ITime start) {
+        tau = start;
+        startTime = start;
+    }
 
-	/**
-	 * Allows subclasses to set the next putative time. Use with care.
-	 * 
-	 * @param t
-	 *            the new time
-	 */
-	protected final void setTau(final ITime t) {
-		this.tau = t;
-	}
+    /**
+     * Allows subclasses to set the next putative time. Use with care.
+     * 
+     * @param t
+     *            the new time
+     */
+    protected final void setTau(final ITime t) {
+        this.tau = t;
+    }
 
-	@Override
-	public final void update(final ITime curTime, final boolean executed, final double param, final IEnvironment<T> env) {
-		if (!schedulable && curTime.compareTo(startTime) >= 0) {
-			/*
-			 * If the simulation time is beyond the startTime for this reaction,
-			 * it can start being scheduled normally.
-			 */
-			schedulable = true;
-		}
-		/*
-		 * If the current time is not past the starting time for this reaction,
-		 * it should not be used.
-		 */
-		updateStatus(schedulable ? curTime : startTime, executed, param, env);
-	}
+    @Override
+    public final void update(final ITime curTime, final boolean executed, final double param, final IEnvironment<T> env) {
+        if (!schedulable && curTime.compareTo(startTime) >= 0) {
+            /*
+             * If the simulation time is beyond the startTime for this reaction,
+             * it can start being scheduled normally.
+             */
+            schedulable = true;
+        }
+        /*
+         * If the current time is not past the starting time for this reaction,
+         * it should not be used.
+         */
+        updateStatus(schedulable ? curTime : startTime, executed, param, env);
+    }
 
-	@Override
-	public final ITime getNextOccurence() {
-		return tau;
-	}
+    @Override
+    public final ITime getNextOccurence() {
+        return tau;
+    }
 
-	/**
-	 * Implement this method to update the distribution's internal status.
-	 * 
-	 * @param curTime
-	 *            current time
-	 * @param executed
-	 *            true if the reaction whose this distribution has been
-	 *            associated has just been executed
-	 * @param param
-	 *            optional parameter passed by the reaction
-	 * @param env
-	 *            the current environment
-	 */
-	protected abstract void updateStatus(final ITime curTime, final boolean executed, double param, final IEnvironment<T> env);
+    /**
+     * Implement this method to update the distribution's internal status.
+     * 
+     * @param curTime
+     *            current time
+     * @param executed
+     *            true if the reaction whose this distribution has been
+     *            associated has just been executed
+     * @param param
+     *            optional parameter passed by the reaction
+     * @param env
+     *            the current environment
+     */
+    protected abstract void updateStatus(final ITime curTime, final boolean executed, double param, final IEnvironment<T> env);
 
-	@Override
-	public abstract AbstractDistribution<T> clone();
+    @Override
+    public abstract AbstractDistribution<T> clone();
 
 }

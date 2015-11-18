@@ -17,32 +17,30 @@ import it.unibo.alchemist.model.interfaces.IReaction;
 /**
  * Fake movement class, used only to trigger the neighborhood update.
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public class FakeMove<T> extends AbstractMoveNode<T> {
 
-	private static final long serialVersionUID = 1774989279335172458L;
+    private static final long serialVersionUID = 1774989279335172458L;
 
-	/**
-	 * @param environment
-	 *            the environment
-	 * @param node
-	 *            the node
-	 */
-	public FakeMove(final IEnvironment<T> environment, final INode<T> node) {
-		super(environment, node, true);
-	}
+    /**
+     * @param environment
+     *            the environment
+     * @param node
+     *            the node
+     */
+    public FakeMove(final IEnvironment<T> environment, final INode<T> node) {
+        super(environment, node, true);
+    }
 
-	@Override
-	public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
-		return new FakeMove<>(getEnvironment(), n);
-	}
+    @Override
+    public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
+        return new FakeMove<>(getEnvironment(), n);
+    }
 
-	@Override
-	public IPosition getNextPosition() {
-		return getEnvironment().getPosition(getNode());
-	}
+    @Override
+    public IPosition getNextPosition() {
+        return getEnvironment().getPosition(getNode());
+    }
 
 }

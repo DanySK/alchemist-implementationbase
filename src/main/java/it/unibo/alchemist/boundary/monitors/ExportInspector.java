@@ -16,8 +16,6 @@ import java.lang.annotation.Target;
 /**
  * Use this annotation to allow your non-graphical output monitors to be initialized within the graphical interface of Alchemist.
  * 
- * @author Danilo Pianini
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

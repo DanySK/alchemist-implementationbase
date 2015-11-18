@@ -16,56 +16,59 @@ import it.unibo.alchemist.model.interfaces.ITime;
 import it.unibo.alchemist.utils.L;
 
 /**
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 @ExportInspector
 public class NumberOfNodesNextToANode<T> extends EnvironmentInspector<T> {
 
-	private static final long serialVersionUID = 6973385303909686690L;
+    private static final long serialVersionUID = 6973385303909686690L;
 
-	@ExportForGUI(nameToExport = "ID of the central node")
-	private String id = "0";
-	@ExportForGUI(nameToExport = "Range")
-	private String range = "10.0";
+    @ExportForGUI(nameToExport = "ID of the central node")
+    private String id = "0";
+    @ExportForGUI(nameToExport = "Range")
+    private String range = "10.0";
 
-	@Override
-	protected double[] extractValues(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step) {
-		try {
-			return new double[] { env.getNodesWithinRange(env.getNodeByID(Integer.parseInt(id)), Double.parseDouble(range)).size() };
-		} catch (NumberFormatException e) {
-			L.warn(e);
-		}
-		return new double[]{Double.NaN};
-	}
+    @Override
+    protected double[] extractValues(final IEnvironment<T> env, final IReaction<T> r, final ITime time,
+            final long step) {
+        try {
+            return new double[] {
+                    env.getNodesWithinRange(env.getNodeByID(Integer.parseInt(id)),
+                    Double.parseDouble(range)).size() };
+        } catch (NumberFormatException e) {
+            L.warn(e);
+        }
+        return new double[] { Double.NaN };
+    }
 
-	/**
-	 * @return id
-	 */
-	public String getId() {
-		return id;
-	}
+    /**
+     * @return id
+     */
+    public String getId() {
+        return id;
+    }
 
-	/**
-	 * @param idn id
-	 */
-	public void setId(final String idn) {
-		this.id = idn;
-	}
+    /**
+     * @param idn
+     *            id
+     */
+    public void setId(final String idn) {
+        this.id = idn;
+    }
 
-	/**
-	 * @return range
-	 */
-	public String getRange() {
-		return range;
-	}
+    /**
+     * @return range
+     */
+    public String getRange() {
+        return range;
+    }
 
-	/**
-	 * @param rng range
-	 */
-	public void setRange(final String rng) {
-		this.range = rng;
-	}
+    /**
+     * @param rng
+     *            range
+     */
+    public void setRange(final String rng) {
+        this.range = rng;
+    }
 
 }

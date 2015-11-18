@@ -21,35 +21,33 @@ import it.unibo.alchemist.model.interfaces.TimeDistribution;
  * conditions, and tries to run every time the {@link TimeDistribution} wants
  * to.
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public class Event<T> extends AReaction<T> {
 
-	private static final long serialVersionUID = -1640973841645383193L;
+    private static final long serialVersionUID = -1640973841645383193L;
 
-	/**
-	 * @param node the node this {@link Event} belongs to
-	 * @param timedist the {@link TimeDistribution} this event should use
-	 */
-	public Event(final INode<T> node, final TimeDistribution<T> timedist) {
-		super(node, timedist);
-	}
+    /**
+     * @param node the node this {@link Event} belongs to
+     * @param timedist the {@link TimeDistribution} this event should use
+     */
+    public Event(final INode<T> node, final TimeDistribution<T> timedist) {
+        super(node, timedist);
+    }
 
-	@Override
-	protected void updateInternalStatus(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
-	}
+    @Override
+    protected void updateInternalStatus(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
+    }
 
-	@Override
-	public double getRate() {
-		return getTimeDistribution().getRate();
-	}
+    @Override
+    public double getRate() {
+        return getTimeDistribution().getRate();
+    }
 
-	@Override
-	public Event<T> cloneOnNewNode(final INode<T> n) {
-		return new Event<>(n, getTimeDistribution().clone());
-	}
-	
+    @Override
+    public Event<T> cloneOnNewNode(final INode<T> n) {
+        return new Event<>(n, getTimeDistribution().clone());
+    }
+
 
 }

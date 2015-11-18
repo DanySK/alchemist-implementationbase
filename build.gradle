@@ -7,6 +7,15 @@ apply plugin: 'project-report'
 apply plugin: 'maven'
 apply plugin: 'build-dashboard'
 apply plugin: 'signing'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.danilopianini:smartrrr:0.0.0'
+    }
+}
+apply plugin: 'org.danilopianini.smartrrr'
 
 sourceCompatibility = "$JDKVersion"
 targetCompatibility = "$JDKVersion"
@@ -27,24 +36,9 @@ repositories {
     mavenCentral()
 }
 
-configurations.all {
-  	resolutionStrategy {
-	    failOnVersionConflict()
-	    dependencySubstitution {
-		    substitute module('com.google.protobuf:protobuf-java:2.4.1') with module('com.google.protobuf:protobuf-java:2.6.1')
-		    substitute module('commons-io:commons-io:1.3.1') with module('commons-io:commons-io:[1.3.1, 3.0[')
-	    }
-	    force "com.google.guava:guava:$guavaVersion"
-	    force "it.unibo.alchemist:alchemist-implementationbase:$version"
-    }
-}
-
 configurations {
     doc {
         transitive false
-    }
-    compile {
-        exclude module: 'org.eclipse.xtext.dependencies'
     }
     doclet
 }
@@ -211,6 +205,11 @@ uploadArchives {
 	            		name 'Enrico Galassi'
 	            		email 'enrico.galassi@studio.unibo.it'
 	            		url 'http://apice.unibo.it/xwiki/bin/view/XWiki/EnricoGalassi/'
+	            	}
+	            	developer {
+	            		name 'Luca Mella'
+	            		email 'luca.mella@studio.unibo.it'
+	            		url 'http://apice.unibo.it/xwiki/bin/view/XWiki/LucaMella/'
 	            	}
 	            }
 	            scm {

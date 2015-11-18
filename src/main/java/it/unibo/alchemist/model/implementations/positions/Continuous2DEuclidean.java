@@ -12,32 +12,30 @@
 package it.unibo.alchemist.model.implementations.positions;
 
 /**
- * @author Danilo Pianini
- * @version 20110129
  * 
  */
 public class Continuous2DEuclidean extends ContinuousGenericEuclidean {
 
-	private static final long serialVersionUID = 1042391992665398942L;
+    private static final long serialVersionUID = 1042391992665398942L;
 
-	/**
-	 * @param xp
-	 *            The X coordinate
-	 * @param yp
-	 *            The Y coordinate
-	 */
-	public Continuous2DEuclidean(final double xp, final double yp) {
-		super(xp, yp);
-	}
+    /**
+     * @param xp
+     *            The X coordinate
+     * @param yp
+     *            The Y coordinate
+     */
+    public Continuous2DEuclidean(final double xp, final double yp) {
+        super(xp, yp);
+    }
 
-	/**
-	 * @param c an array of length 2 containing the coordinates
-	 */
-	public Continuous2DEuclidean(final double[] c) {
-		super(c);
-		if (c.length != 2) {
-			throw new IllegalArgumentException("The array must have exactly two elements.");
-		}
-	}
+    /**
+     * @param c an array of length 2 containing the coordinates
+     */
+    public Continuous2DEuclidean(final double[] c) {
+        super(c);
+        if (c.length != 2) {
+            throw new IllegalArgumentException("The array must have exactly two elements.");
+        }
+    }
 
 }

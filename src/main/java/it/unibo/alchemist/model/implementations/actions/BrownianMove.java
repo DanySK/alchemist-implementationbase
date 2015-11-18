@@ -19,59 +19,57 @@ import it.unibo.alchemist.model.interfaces.IReaction;
 /**
  * Moves the node randomly.
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public class BrownianMove<T> extends AbstractMoveNode<T> {
 
-	private static final long serialVersionUID = -904100978119782403L;
-	private final double r;
-	private final RandomEngine rng;
+    private static final long serialVersionUID = -904100978119782403L;
+    private final double r;
+    private final RandomEngine rng;
 
-	/**
-	 * @param environment
-	 *            the environment
-	 * @param node
-	 *            the node
-	 * @param rand
-	 *            the simulation {@link RandomEngine}.
-	 * @param range
-	 *            the maximum distance the node may walk in a single step for
-	 *            each dimension
-	 */
-	public BrownianMove(final IEnvironment<T> environment, final INode<T> node, final RandomEngine rand, final double range) {
-		super(environment, node);
-		r = range;
-		rng = rand;
-	}
+    /**
+     * @param environment
+     *            the environment
+     * @param node
+     *            the node
+     * @param rand
+     *            the simulation {@link RandomEngine}.
+     * @param range
+     *            the maximum distance the node may walk in a single step for
+     *            each dimension
+     */
+    public BrownianMove(final IEnvironment<T> environment, final INode<T> node, final RandomEngine rand, final double range) {
+        super(environment, node);
+        r = range;
+        rng = rand;
+    }
 
-	@Override
-	public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> reaction) {
-		return new BrownianMove<>(getEnvironment(), n, rng, r);
-	}
+    @Override
+    public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> reaction) {
+        return new BrownianMove<>(getEnvironment(), n, rng, r);
+    }
 
-	@Override
-	public IPosition getNextPosition() {
-		return new Continuous2DEuclidean(genRandom() * r, genRandom() * r);
-	}
-	
-	private double genRandom() {
-		return rng.nextFloat() - 0.5;
-	}
+    @Override
+    public IPosition getNextPosition() {
+        return new Continuous2DEuclidean(genRandom() * r, genRandom() * r);
+    }
 
-	/**
-	 * @return the movement radius
-	 */
-	protected double getRadius() {
-		return r;
-	}
+    private double genRandom() {
+        return rng.nextFloat() - 0.5;
+    }
 
-	/**
-	 * @return the {@link RandomEngine}
-	 */
-	protected RandomEngine getRandomEngine() {
-		return rng;
-	}
+    /**
+     * @return the movement radius
+     */
+    protected double getRadius() {
+        return r;
+    }
+
+    /**
+     * @return the {@link RandomEngine}
+     */
+    protected RandomEngine getRandomEngine() {
+        return rng;
+    }
 
 }
