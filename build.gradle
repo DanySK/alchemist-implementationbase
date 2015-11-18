@@ -40,9 +40,6 @@ configurations {
     doc {
         transitive false
     }
-    compile {
-        exclude module: 'org.eclipse.xtext.dependencies'
-    }
     doclet
 }
 
