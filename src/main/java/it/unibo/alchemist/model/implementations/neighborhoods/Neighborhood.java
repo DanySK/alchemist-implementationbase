@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * A simple implementation of a neighborhood.
  * 
@@ -41,6 +43,7 @@ public final class Neighborhood<T> implements INeighborhood<T> {
     private static final long serialVersionUID = 2810393824506583972L;
     private final INode<T> c;
     private final IEnvironment<T> env;
+    @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "False positive, TIntList implements Externalizable that Implements Serializable")
     private final TIntList kCache;
     private final List<INode<T>> k;
 
