@@ -17,49 +17,47 @@ import it.unibo.alchemist.model.interfaces.TimeDistribution;
 /**
  * 
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public class ChemicalReaction<T> extends AReaction<T> {
 
-	private static final long serialVersionUID = -5260452049415003046L;
-	private double currentRate;
+    private static final long serialVersionUID = -5260452049415003046L;
+    private double currentRate;
 
-	/**
-	 * @param n
-	 *            node
-	 * @param pd
-	 *            time distribution
-	 */
-	public ChemicalReaction(final INode<T> n, final TimeDistribution<T> pd) {
-		super(n, pd);
-	}
+    /**
+     * @param n
+     *            node
+     * @param pd
+     *            time distribution
+     */
+    public ChemicalReaction(final INode<T> n, final TimeDistribution<T> pd) {
+        super(n, pd);
+    }
 
-	@Override
-	public ChemicalReaction<T> cloneOnNewNode(final INode<T> n) {
-		return new ChemicalReaction<>(n, getTimeDistribution().clone());
-	}
+    @Override
+    public ChemicalReaction<T> cloneOnNewNode(final INode<T> n) {
+        return new ChemicalReaction<>(n, getTimeDistribution().clone());
+    }
 
-	@Override
-	protected void updateInternalStatus(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
-		currentRate = getTimeDistribution().getRate();
-		for (final ICondition<T> cond : getConditions()) {
-			final double v = cond.getPropensityConditioning();
-			if (v == 0) {
-				currentRate = 0;
-				break;
-			}
-			if (v < 0) {
-				throw new IllegalStateException("Condition " + cond + " returned a negative propensity conditioning value");
-			}
-			currentRate *= cond.getPropensityConditioning();
-		}
-	}
+    @Override
+    protected void updateInternalStatus(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
+        currentRate = getTimeDistribution().getRate();
+        for (final ICondition<T> cond : getConditions()) {
+            final double v = cond.getPropensityConditioning();
+            if (v == 0) {
+                currentRate = 0;
+                break;
+            }
+            if (v < 0) {
+                throw new IllegalStateException("Condition " + cond + " returned a negative propensity conditioning value");
+            }
+            currentRate *= cond.getPropensityConditioning();
+        }
+    }
 
-	@Override
-	public double getRate() {
-		return currentRate;
-	}
+    @Override
+    public double getRate() {
+        return currentRate;
+    }
 
 }

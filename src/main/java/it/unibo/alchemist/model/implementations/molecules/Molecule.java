@@ -17,67 +17,65 @@ import it.unibo.alchemist.model.interfaces.IMolecule;
 
 
 /**
- * @author Danilo Pianini
- * 
  *         Simple implementation of Molecule. Ids are generated through a simple
  *         Singleton Pattern, no thread safeness is provided.
  * 
  */
 public class Molecule implements IMolecule {
 
-	private static final long serialVersionUID = 2727376723102146271L;
+    private static final long serialVersionUID = 2727376723102146271L;
 
-	private final FasterString n;
-	
-	/**
-	 * @param name
-	 *            the molecule name
-	 */
-	public Molecule(final String name) {
-		this(new FasterString(name));
-	}
+    private final FasterString n;
 
-	/**
-	 * @param name
-	 *            the molecule name
-	 */
-	public Molecule(final FasterString name) {
-		this.n = name;
-	}
+    /**
+     * @param name
+     *            the molecule name
+     */
+    public Molecule(final String name) {
+        this(new FasterString(name));
+    }
 
-	@Override
-	public boolean dependsOn(final IMolecule mol) {
-		return equals(mol);
-	}
+    /**
+     * @param name
+     *            the molecule name
+     */
+    public Molecule(final FasterString name) {
+        this.n = name;
+    }
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (obj instanceof Molecule) {
-			return ((Molecule) obj).n.equals(n);
-		}
-		return false;
-	}
+    @Override
+    public boolean dependsOn(final IMolecule mol) {
+        return equals(mol);
+    }
 
-	@Override
-	public long getId() {
-		return n.hash64();
-	}
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof Molecule) {
+            return ((Molecule) obj).n.equals(n);
+        }
+        return false;
+    }
 
-	@Override
-	public int hashCode() {
-		return n.hashCode();
-	}
+    @Override
+    public long getId() {
+        return n.hash64();
+    }
 
-	@Override
-	public String toString() {
-		return n + "[ID: " + n.hashToString() + "]";
-	}
-	
-	/**
-	 * @return a {@link FasterString} version of this {@link Molecule}
-	 */
-	public final FasterString toFasterString() {
-		return n;
-	}
+    @Override
+    public int hashCode() {
+        return n.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return n + "[ID: " + n.hashToString() + "]";
+    }
+
+    /**
+     * @return a {@link FasterString} version of this {@link Molecule}
+     */
+    public final FasterString toFasterString() {
+        return n;
+    }
 
 }

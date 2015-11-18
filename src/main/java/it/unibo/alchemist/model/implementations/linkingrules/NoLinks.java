@@ -19,17 +19,15 @@ import java.util.Collections;
 /**
  * This rule guarantees that no links are created at all.
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public class NoLinks<T> implements ILinkingRule<T> {
 
-	private static final long serialVersionUID = -711043794655618585L;
+    private static final long serialVersionUID = -711043794655618585L;
 
-	@Override
-	public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-		return new Neighborhood<>(center, Collections.emptyList(), env);
-	}
+    @Override
+    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
+        return new Neighborhood<>(center, Collections.emptyList(), env);
+    }
 
 }

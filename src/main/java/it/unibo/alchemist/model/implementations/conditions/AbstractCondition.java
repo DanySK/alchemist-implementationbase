@@ -20,38 +20,36 @@ import java.util.List;
 
 
 /**
- * @author Danilo Pianini
- * @version 20110531
  *
  * @param <T>
  */
 public abstract class AbstractCondition<T> implements ICondition<T> {
 
-	private static final long serialVersionUID = -1610947908159507754L;
-	private final List<IMolecule> influencing = new ArrayList<IMolecule>(1);
-	private final INode<T> n;
+    private static final long serialVersionUID = -1610947908159507754L;
+    private final List<IMolecule> influencing = new ArrayList<IMolecule>(1);
+    private final INode<T> n;
 
-	/**
-	 * @param node the node this Condition belongs to
-	 */
-	public AbstractCondition(final INode<T> node) {
-		this.n = node;
-	}
+    /**
+     * @param node the node this Condition belongs to
+     */
+    public AbstractCondition(final INode<T> node) {
+        this.n = node;
+    }
 
-	@Override
-	public List<? extends IMolecule> getInfluencingMolecules() {
-		return influencing;
-	}
-	
-	@Override
-	public INode<T> getNode() {
-		return n;
-	}
-	
-	/**
-	 * @param m the molecule to add
-	 */
-	protected void addReadMolecule(final IMolecule m) {
-		influencing.add(m);
-	}
+    @Override
+    public List<? extends IMolecule> getInfluencingMolecules() {
+        return influencing;
+    }
+
+    @Override
+    public INode<T> getNode() {
+        return n;
+    }
+
+    /**
+     * @param m the molecule to add
+     */
+    protected void addReadMolecule(final IMolecule m) {
+        influencing.add(m);
+    }
 }

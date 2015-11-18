@@ -18,39 +18,37 @@ import it.unibo.alchemist.model.interfaces.IPosition;
  * Similar to {@link EuclideanDistance}, but if the environment has obstacles,
  * the links are removed.
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public class ObstaclesBreakConnection<T> extends EuclideanDistance<T> {
 
-	private static final long serialVersionUID = -3279202906910960340L;
+    private static final long serialVersionUID = -3279202906910960340L;
 
-	/**
-	 * @param radius
-	 *            connection range
-	 */
-	public ObstaclesBreakConnection(final Double radius) {
-		super(radius);
-	}
+    /**
+     * @param radius
+     *            connection range
+     */
+    public ObstaclesBreakConnection(final Double radius) {
+        super(radius);
+    }
 
-	@Override
-	public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-		final INeighborhood<T> normal = super.computeNeighborhood(center, env);
-		if (!normal.isEmpty() && env instanceof IEnvironment2DWithObstacles) {
-			final IPosition cp = env.getPosition(center);
-			@SuppressWarnings("unchecked")
-			final IEnvironment2DWithObstacles<?, T> environment = (IEnvironment2DWithObstacles<?, T>) env;
-			for (int i = 0; i < normal.size(); i++) {
-				final INode<T> node = normal.getNeighborByNumber(i);
-				final IPosition np = environment.getPosition(node);
-				if (environment.intersectsObstacle(cp, np)) {
-					normal.removeNeighbor(node);
-					i--;
-				}
-			}
-		}
-		return normal;
-	}
+    @Override
+    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
+        final INeighborhood<T> normal = super.computeNeighborhood(center, env);
+        if (!normal.isEmpty() && env instanceof IEnvironment2DWithObstacles) {
+            final IPosition cp = env.getPosition(center);
+            @SuppressWarnings("unchecked")
+            final IEnvironment2DWithObstacles<?, T> environment = (IEnvironment2DWithObstacles<?, T>) env;
+            for (int i = 0; i < normal.size(); i++) {
+                final INode<T> node = normal.getNeighborByNumber(i);
+                final IPosition np = environment.getPosition(node);
+                if (environment.intersectsObstacle(cp, np)) {
+                    normal.removeNeighbor(node);
+                    i--;
+                }
+            }
+        }
+        return normal;
+    }
 
 }

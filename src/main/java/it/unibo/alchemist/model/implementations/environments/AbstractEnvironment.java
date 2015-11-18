@@ -28,8 +28,6 @@ import org.danilopianini.lang.SpatialIndex;
  * Very generic and basic implementation for an environment. Basically, only
  * manages an internal set of nodes and their position.
  * 
- * @author Danilo Pianini
- * 
  * @param <T>
  */
 public abstract class AbstractEnvironment<T> implements IEnvironment<T> {

@@ -18,42 +18,40 @@ import it.unibo.alchemist.model.interfaces.INode;
 import it.unibo.alchemist.model.interfaces.IReaction;
 
 /**
- * @author Danilo Pianini
- * @version 20110322
  *
  * @param <T>
  */
 public class SetLocalMoleculeConcentration<T> extends AbstractActionOnSingleMolecule<T> {
 
-	private static final long serialVersionUID = -197253027556270645L;
-	private final T val;
+    private static final long serialVersionUID = -197253027556270645L;
+    private final T val;
 
-	/**
-	 * @param node
-	 *            The node to which this action belongs
-	 * @param target
-	 *            the molecule whose concentration will be modified
-	 * @param value
-	 *            the new concentration value for the molecule
-	 */
-	public SetLocalMoleculeConcentration(final INode<T> node, final IMolecule target, final T value) {
-		super(node, target);
-		this.val = value;
-	}
-	
-	@Override
-	public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
-		return new SetLocalMoleculeConcentration<T>(n, getMolecule(), val);
-	}
+    /**
+     * @param node
+     *            The node to which this action belongs
+     * @param target
+     *            the molecule whose concentration will be modified
+     * @param value
+     *            the new concentration value for the molecule
+     */
+    public SetLocalMoleculeConcentration(final INode<T> node, final IMolecule target, final T value) {
+        super(node, target);
+        this.val = value;
+    }
 
-	@Override
-	public void execute() {
-		getNode().setConcentration(getMolecule(), val);
-	}
+    @Override
+    public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
+        return new SetLocalMoleculeConcentration<T>(n, getMolecule(), val);
+    }
 
-	@Override
-	public Context getContext() {
-		return Context.LOCAL;
-	}
+    @Override
+    public void execute() {
+        getNode().setConcentration(getMolecule(), val);
+    }
+
+    @Override
+    public Context getContext() {
+        return Context.LOCAL;
+    }
 
 }
