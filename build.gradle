@@ -206,6 +206,11 @@ uploadArchives {
 	            		email 'enrico.galassi@studio.unibo.it'
 	            		url 'http://apice.unibo.it/xwiki/bin/view/XWiki/EnricoGalassi/'
 	            	}
+	            	developer {
+	            		name 'Luca Mella'
+	            		email 'luca.mella@studio.unibo.it'
+	            		url 'http://apice.unibo.it/xwiki/bin/view/XWiki/LucaMella/'
+	            	}
 	            }
 	            scm {
 	            	url "$scmRootUrl/$artifactId"
