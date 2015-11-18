@@ -34,187 +34,215 @@ import org.danilopianini.lang.SpatialIndex;
  */
 public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 
-	private static final long serialVersionUID = 2704085518489753349L;
-	/**
-	 * The default monitor that will be loaded. If null, the GUI must default to a compatible monitor.
-	 */
-	protected static final String DEFAULT_MONITOR = null;
-	private final TIntObjectHashMap<IPosition> nodeToPos = new TIntObjectHashMap<>();
-	private final TIntObjectHashMap<INode<T>> nodes = new TIntObjectHashMap<INode<T>>();
-	private String separator = System.getProperty("line.separator");
-	private final SpatialIndex<INode<T>> spatialIndex;
+    private static final long serialVersionUID = 2704085518489753349L;
+    /**
+     * The default monitor that will be loaded. If null, the GUI must default to
+     * a compatible monitor.
+     */
+    protected static final String DEFAULT_MONITOR = null;
+    private final TIntObjectHashMap<IPosition> nodeToPos = new TIntObjectHashMap<>();
+    private final TIntObjectHashMap<INode<T>> nodes = new TIntObjectHashMap<INode<T>>();
+    private String separator = System.getProperty("line.separator");
+    private final SpatialIndex<INode<T>> spatialIndex;
 
-	/**
-	 * @param internalIndex the {@link SpatialIndex} to use in order to efficiently retrieve nodes.
-	 */
-	protected AbstractEnvironment(final SpatialIndex<INode<T>> internalIndex) {
-		assert internalIndex != null;
-		spatialIndex = internalIndex;
-	}
-	
-	/**
-	 * Adds or changes a position entry in the position map.
-	 * 
-	 * @param n
-	 *            the node
-	 * @param p
-	 *            its new position
-	 */
-	protected final void setPosition(final INode<T> n, final IPosition p) {
-		final IPosition pos = nodeToPos.put(n.getId(), p);
-		if (pos != null && !spatialIndex.move(n, pos.getCartesianCoordinates(), p.getCartesianCoordinates())) {
-			throw new IllegalArgumentException(
-					"Tried to move a node not previously present in the environment: \n"
-					+ "Node: " + n + "\n"
-					+ "Requested position" + p);
-		}
-	}
+    /**
+     * @param internalIndex
+     *            the {@link SpatialIndex} to use in order to efficiently
+     *            retrieve nodes.
+     */
+    protected AbstractEnvironment(final SpatialIndex<INode<T>> internalIndex) {
+        assert internalIndex != null;
+        spatialIndex = internalIndex;
+    }
 
-	/**
-	 * This method gets called once that the basic operations for a node
-	 * addition have been performed by {@link AbstractEnvironment}.
-	 * 
-	 * @param node
-	 *            the node to add
-	 * @param p
-	 *            the position
-	 */
-	protected abstract void nodeAdded(final INode<T> node, final IPosition p);
+    /**
+     * Adds or changes a position entry in the position map.
+     * 
+     * @param n
+     *            the node
+     * @param p
+     *            its new position
+     */
+    protected final void setPosition(final INode<T> n, final IPosition p) {
+        final IPosition pos = nodeToPos.put(n.getId(), p);
+        if (pos != null && !spatialIndex.move(n, pos.getCartesianCoordinates(), p.getCartesianCoordinates())) {
+            throw new IllegalArgumentException("Tried to move a node not previously present in the environment: \n"
+                    + "Node: " + n + "\n" + "Requested position" + p);
+        }
+    }
 
-	@Override
-	public final void addNode(final INode<T> node, final IPosition p) {
-		setPosition(node, p);
-		nodes.put(node.getId(), node);
-		spatialIndex.insert(node, p.getCartesianCoordinates());
-		nodeAdded(node, p);
-	}
-	
-	/**
-	 * Deletes a position from the map.
-	 * 
-	 * @param node
-	 *            the node whose position will be removed
-	 * @return the position removed
-	 */
-	protected final IPosition getAndDeletePosition(final INode<T> node) {
-		return nodeToPos.remove(node.getId());
-	}
+    /**
+     * This method gets called once that the basic operations for a node
+     * addition have been performed by {@link AbstractEnvironment}.
+     * 
+     * @param node
+     *            the node to add
+     * @param p
+     *            the position
+     */
+    protected abstract void nodeAdded(final INode<T> node, final IPosition p);
 
-	@Override
-	public final IPosition getPosition(final INode<T> node) {
-		return nodeToPos.get(node.getId());
-	}
-	
-	/**
-	 * This method gets called once that the basic operations for a node
-	 * removal have been performed by {@link AbstractEnvironment}.
-	 * 
-	 * @param node
-	 *            the node to add
-	 * @param pos
-	 *            the position
-	 */
-	protected abstract void nodeRemoved(INode<T> node, IPosition pos);
+    /**
+     * Allows subclasses to determine wether or not a {@link INode} should
+     * actually get added to this environment.
+     * 
+     * @param node
+     *            the node
+     * @param p
+     *            the original (requested) position
+     * @return true if the node should be added to this environment, false
+     *         otherwise
+     */
+    protected abstract boolean nodeShouldBeAdded(final INode<T> node, final IPosition p);
 
-	@Override
-	public final void removeNode(final INode<T> node) {
-		nodes.remove(node.getId());
-		final IPosition pos = nodeToPos.remove(node.getId());
-		spatialIndex.remove(node, pos.getCartesianCoordinates());
-		nodeRemoved(node, pos);
-	}
+    /**
+     * Allows subclasses to tune the actual position of a node, applying spatial
+     * constrains at node addition.
+     * 
+     * @param node
+     *            the node
+     * @param p
+     *            the original (requested) position
+     * @return the actual position where the node should be located
+     */
+    protected abstract IPosition computeActualInsertionPosition(final INode<T> node, final IPosition p);
 
-	@Override
-	public double getDistanceBetweenNodes(final INode<T> n1, final INode<T> n2) {
-		final IPosition p1 = getPosition(n1);
-		final IPosition p2 = getPosition(n2);
-		return p1.getDistanceTo(p2);
-	}
+    @Override
+    public final void addNode(final INode<T> node, final IPosition p) {
+        if (nodeShouldBeAdded(node, p)) {
+            final IPosition actualPosition = computeActualInsertionPosition(node, p);
+            setPosition(node, actualPosition);
+            nodes.put(node.getId(), node);
+            spatialIndex.insert(node, actualPosition.getCartesianCoordinates());
+            nodeAdded(node, p);
+        }
+    }
 
-	@Override
-	public int getNodesNumber() {
-		return nodes.size();
-	}
+    /**
+     * Deletes a position from the map.
+     * 
+     * @param node
+     *            the node whose position will be removed
+     * @return the position removed
+     */
+    protected final IPosition getAndDeletePosition(final INode<T> node) {
+        return nodeToPos.remove(node.getId());
+    }
 
-	@Override
-	public Collection<INode<T>> getNodes() {
-		return nodes.valueCollection();
-	}
+    @Override
+    public final IPosition getPosition(final INode<T> node) {
+        return nodeToPos.get(node.getId());
+    }
 
-	@Override
-	public INode<T> getNodeByID(final int id) {
-		return nodes.get(id);
-	}
+    /**
+     * This method gets called once that the basic operations for a node removal
+     * have been performed by {@link AbstractEnvironment}.
+     * 
+     * @param node
+     *            the node to add
+     * @param pos
+     *            the position
+     */
+    protected abstract void nodeRemoved(INode<T> node, IPosition pos);
 
-	@Override
-	public Iterator<INode<T>> iterator() {
-		return nodes.valueCollection().iterator();
-	}
+    @Override
+    public final void removeNode(final INode<T> node) {
+        nodes.remove(node.getId());
+        final IPosition pos = nodeToPos.remove(node.getId());
+        spatialIndex.remove(node, pos.getCartesianCoordinates());
+        nodeRemoved(node, pos);
+    }
 
-	@Override
-	public List<INode<T>> getNodesWithinRange(final INode<T> center, final double range) {
-		/*
-		 * Remove the center node
-		 */
-		return getAllNodesInRange(getPosition(center), range)
-				.filter((n) -> !n.equals(center))
-				.collect(Collectors.toList());
-	}
+    @Override
+    public double getDistanceBetweenNodes(final INode<T> n1, final INode<T> n2) {
+        final IPosition p1 = getPosition(n1);
+        final IPosition p2 = getPosition(n2);
+        return p1.getDistanceTo(p2);
+    }
 
-	private Stream<INode<T>> getAllNodesInRange(final IPosition center, final double range) {
-		final List<IPosition> boundingBox = center.buildBoundingBox(range);
-		assert boundingBox.size() == getDimensions();
-		final double[][] queryArea = new double[getDimensions()][];
-		IntStream.range(0, getDimensions()).parallel()
-			.forEach(i -> queryArea[i] = boundingBox.get(i).getCartesianCoordinates());
-		return spatialIndex.query(queryArea).parallelStream()
-				.filter((n) -> getPosition(n).getDistanceTo(center) <= range);
-	}
+    @Override
+    public int getNodesNumber() {
+        return nodes.size();
+    }
 
-	@Override
-	public List<INode<T>> getNodesWithinRange(final IPosition center, final double range) {
-		/*
-		 * Collect every node in range
-		 */
-		return getAllNodesInRange(center, range).collect(Collectors.toList());
-	}
+    @Override
+    public Collection<INode<T>> getNodes() {
+        return nodes.valueCollection();
+    }
 
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		for (final INode<T> n : this) {
-			sb.append(n + separator);
-		}
-		return sb.toString();
-	}
+    @Override
+    public INode<T> getNodeByID(final int id) {
+        return nodes.get(id);
+    }
 
-	/**
-	 * @return the separator used in toString()
-	 */
-	public String getSeparator() {
-		return separator;
-	}
+    @Override
+    public Iterator<INode<T>> iterator() {
+        return nodes.valueCollection().iterator();
+    }
 
-	/**
-	 * @param s
-	 *            the new separator
-	 */
-	public void setSeparator(final String s) {
-		separator = s;
-	}
+    @Override
+    public List<INode<T>> getNodesWithinRange(final INode<T> center, final double range) {
+        /*
+         * Remove the center node
+         */
+        return getAllNodesInRange(getPosition(center), range).filter((n) -> !n.equals(center))
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public String getPreferredMonitor() {
-		return DEFAULT_MONITOR;
-	}
-	
-	@Override
-	public void forEach(final Consumer<? super INode<T>> action) {
-		getNodes().forEach(action);
-	}
-	
-	@Override
-	public Spliterator<INode<T>> spliterator() {
-		return getNodes().spliterator();
-	}
+    private Stream<INode<T>> getAllNodesInRange(final IPosition center, final double range) {
+        final List<IPosition> boundingBox = center.buildBoundingBox(range);
+        assert boundingBox.size() == getDimensions();
+        final double[][] queryArea = new double[getDimensions()][];
+        IntStream.range(0, getDimensions()).parallel()
+                .forEach(i -> queryArea[i] = boundingBox.get(i).getCartesianCoordinates());
+        return spatialIndex.query(queryArea).parallelStream()
+                .filter((n) -> getPosition(n).getDistanceTo(center) <= range);
+    }
+
+    @Override
+    public List<INode<T>> getNodesWithinRange(final IPosition center, final double range) {
+        /*
+         * Collect every node in range
+         */
+        return getAllNodesInRange(center, range).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        for (final INode<T> n : this) {
+            sb.append(n + separator);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * @return the separator used in toString()
+     */
+    public String getSeparator() {
+        return separator;
+    }
+
+    /**
+     * @param s
+     *            the new separator
+     */
+    public void setSeparator(final String s) {
+        separator = s;
+    }
+
+    @Override
+    public String getPreferredMonitor() {
+        return DEFAULT_MONITOR;
+    }
+
+    @Override
+    public void forEach(final Consumer<? super INode<T>> action) {
+        getNodes().forEach(action);
+    }
+
+    @Override
+    public Spliterator<INode<T>> spliterator() {
+        return getNodes().spliterator();
+    }
 }
