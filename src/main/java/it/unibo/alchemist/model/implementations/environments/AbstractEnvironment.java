@@ -14,6 +14,7 @@ import it.unibo.alchemist.model.interfaces.INode;
 import it.unibo.alchemist.model.interfaces.IPosition;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
@@ -165,7 +166,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 
     @Override
     public Collection<INode<T>> getNodes() {
-        return nodes.valueCollection();
+        return Collections.unmodifiableCollection(nodes.valueCollection());
     }
 
     @Override
@@ -175,7 +176,7 @@ public abstract class AbstractEnvironment<T> implements IEnvironment<T> {
 
     @Override
     public Iterator<INode<T>> iterator() {
-        return nodes.valueCollection().iterator();
+        return getNodes().iterator();
     }
 
     @Override
