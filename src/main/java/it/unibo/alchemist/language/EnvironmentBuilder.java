@@ -109,7 +109,7 @@ public final class EnvironmentBuilder<T> {
     }
 
     private TimeDistribution<T> buildTimeDist(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
-        return buildK(son, env, "it.unibo.alchemist.model.implementations.probabilitydistributions.");
+        return buildK(son, env, "it.unibo.alchemist.model.implementations.timedistributions.");
     }
 
     private <K> K buildK(final Node son, final Map<String, Object> env, final String defaultPackage) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {

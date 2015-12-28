@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.unibo.alchemist.model.implementations.probabilitydistributions;
+package it.unibo.alchemist.model.implementations.timedistributions;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
