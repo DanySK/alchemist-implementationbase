@@ -14,12 +14,12 @@ import static org.apache.commons.math3.util.FastMath.cos;
 import static org.apache.commons.math3.util.FastMath.nextAfter;
 import static org.apache.commons.math3.util.FastMath.nextUp;
 import static org.apache.commons.math3.util.FastMath.sin;
-import it.unibo.alchemist.model.implementations.neighborhoods.Neighborhood;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IEnvironment2DWithObstacles;
-import it.unibo.alchemist.model.interfaces.INeighborhood;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.model.implementations.neighborhoods.CachedNeighborhood;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Environment2DWithObstacles;
+import it.unibo.alchemist.model.interfaces.Neighborhood;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
 
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
@@ -45,7 +45,7 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
     private static final long serialVersionUID = -6303232843110524434L;
     private static final int COORDS = 6;
     private final double range;
-    private transient IEnvironment2DWithObstacles<?, ?> oenv;
+    private transient Environment2DWithObstacles<?, ?> oenv;
     private transient Area obstacles = new Area();
 
     /**
@@ -60,13 +60,13 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
     }
 
     @Override
-    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-        final INeighborhood<T> normal = super.computeNeighborhood(center, env);
+    public Neighborhood<T> computeNeighborhood(final Node<T> center, final Environment<T> env) {
+        final Neighborhood<T> normal = super.computeNeighborhood(center, env);
         if (!HashUtils.pointerEquals(env, oenv)) {
-            if (!(env instanceof IEnvironment2DWithObstacles<?, ?>)) {
+            if (!(env instanceof Environment2DWithObstacles<?, ?>)) {
                 return normal;
             }
-            oenv = (IEnvironment2DWithObstacles<?, ?>) env;
+            oenv = (Environment2DWithObstacles<?, ?>) env;
             obstacles.reset();
             oenv.getObstacles().forEach((obs) -> {
                 /*
@@ -81,19 +81,19 @@ public class ConnectionBeam<T> extends EuclideanDistance<T> {
             });
         }
         if (!normal.isEmpty()) {
-            final IPosition cp = env.getPosition(center);
-            final List<INode<T>> neighs = normal.getNeighbors().stream()
+            final Position cp = env.getPosition(center);
+            final List<Node<T>> neighs = normal.getNeighbors().stream()
                 .filter((neigh) -> {
-                    final IPosition np = env.getPosition(neigh);
+                    final Position np = env.getPosition(neigh);
                     return !oenv.intersectsObstacle(cp, np) || projectedBeamOvercomesObstacle(cp, np);
                 })
                 .collect(ArrayList::new, (l, el) -> l.add(el), (l1, l2) -> l1.addAll(l2));
-            return new Neighborhood<>(center, neighs, env);
+            return new CachedNeighborhood<>(center, neighs, env);
         }
         return normal;
     }
 
-    private boolean projectedBeamOvercomesObstacle(final IPosition pos1, final IPosition pos2) {
+    private boolean projectedBeamOvercomesObstacle(final Position pos1, final Position pos2) {
         final double p1x = pos1.getCoordinate(0);
         final double p1y = pos1.getCoordinate(1);
         final double p2x = pos2.getCoordinate(0);

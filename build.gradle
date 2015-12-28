@@ -44,13 +44,14 @@ configurations {
 }
 
 dependencies {
-    compile "org.danilopianini:javalib:$javalibVersion"
-    compile "org.danilopianini:javalib-java7:$javalib7Version"
-    compile "it.unibo.alchemist:alchemist-baselib:$baselibVersion"
+    compile "com.google.code.findbugs:findbugs:$findBugsVersion"
     compile "it.unibo.alchemist:alchemist-interfaces:$interfacesVersion"
     compile "it.unibo.alchemist:alchemist-time:$timeVersion"
+    compile "org.apache.commons:commons-math3:$math3Version"
+    compile "org.danilopianini:javalib:$javalibVersion"
+    compile "org.danilopianini:javalib-java7:$javalib7Version"
     compile "org.reflections:reflections:$reflectionsVersion"
-    compile "com.google.code.findbugs:findbugs:$findBugsVersion"
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
     
     testCompile "junit:junit:$junitVersion"
     

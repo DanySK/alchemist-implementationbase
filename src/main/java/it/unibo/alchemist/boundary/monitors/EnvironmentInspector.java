@@ -10,10 +10,9 @@ package it.unibo.alchemist.boundary.monitors;
 
 import it.unibo.alchemist.boundary.interfaces.OutputMonitor;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.utils.L;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +27,8 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.math3.util.FastMath;
 import org.danilopianini.lang.RangedInteger;
 import org.danilopianini.view.ExportForGUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @param <T>
@@ -37,6 +38,7 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
 
     private static final long serialVersionUID = -6609357608585315L;
     private static final int OOM_RANGE = 24;
+    private static final Logger L = LoggerFactory.getLogger(EnvironmentInspector.class);
 
     /**
      * The sampling mode.
@@ -73,7 +75,7 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
     private RangedInteger interval = new RangedInteger(1, 100, 1);
 
     @Override
-    public void finished(final IEnvironment<T> env, final ITime time, final long step) {
+    public void finished(final Environment<T> env, final Time time, final long step) {
         if (writer != null) {
             writer.close();
         }
@@ -84,12 +86,12 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
     }
 
     @Override
-    public void initialized(final IEnvironment<T> env) {
+    public void initialized(final Environment<T> env) {
         stepDone(env, null, new DoubleTime(), 0);
     }
 
     @Override
-    public void stepDone(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step) {
+    public void stepDone(final Environment<T> env, final Reaction<T> r, final Time time, final long step) {
         mutex.acquireUninterruptibly();
         if (System.identityHashCode(fpCache) != System.identityHashCode(filePath)) {
             fpCache = filePath;
@@ -99,7 +101,7 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
             try {
                 writer = new PrintStream(new File(fpCache), StandardCharsets.UTF_8.name());
             } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                L.error(e);
+                L.error("Could create a PrintStream", e);
             }
         }
         final double sample = interval.getVal() * FastMath.pow(10, intervaloom.getVal());
@@ -112,7 +114,7 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
         mutex.release();
     }
 
-    private void writeData(final IEnvironment<T> env, final IReaction<T> r, final ITime time, final long step) {
+    private void writeData(final Environment<T> env, final Reaction<T> r, final Time time, final long step) {
         if (writer == null) {
             throw new IllegalStateException("Error initializing the file writer in " + getClass().getCanonicalName());
         }
@@ -250,9 +252,9 @@ public abstract class EnvironmentInspector<T> implements OutputMonitor<T> {
      * @return an array of data values
      */
     protected abstract double[] extractValues(
-            final IEnvironment<T> env,
-            final IReaction<T> r,
-            final ITime time,
+            final Environment<T> env,
+            final Reaction<T> r,
+            final Time time,
             final long step);
 
 }

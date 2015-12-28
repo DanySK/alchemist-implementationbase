@@ -8,10 +8,6 @@
  */
 package it.unibo.alchemist.language;
 
-import static it.unibo.alchemist.utils.L.debug;
-import static it.unibo.alchemist.utils.L.error;
-import static it.unibo.alchemist.utils.L.warn;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -33,24 +29,27 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.danilopianini.lang.PrimitiveUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import it.unibo.alchemist.external.cern.jet.random.engine.RandomEngine;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import org.apache.commons.math3.random.RandomGenerator;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IConcentration;
-import it.unibo.alchemist.model.interfaces.ICondition;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.ILinkingRule;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Concentration;
+import it.unibo.alchemist.model.interfaces.Condition;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.LinkingRule;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Position;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 /**
@@ -59,6 +58,7 @@ import it.unibo.alchemist.model.interfaces.TimeDistribution;
  */
 public final class EnvironmentBuilder<T> {
 
+    private static final Logger L = LoggerFactory.getLogger(EnvironmentBuilder.class);
     private static final String DEFAULT_PACKAGE = "it.unibo.alchemist.";
     private static final String LINKINGRULES_DEFAULT_PACKAGE = DEFAULT_PACKAGE + "model.implementations.linkingrules.";
     private static final String NAME = "name";
@@ -70,8 +70,9 @@ public final class EnvironmentBuilder<T> {
     private Class<?> concentrationClass;
     private final Random internalRandom = new Random();
     private Class<?> positionClass;
-    private RandomEngine random;
-    private IEnvironment<T> result;
+    private RandomGenerator random;
+    private int seed;
+    private Environment<T> result;
     private final InputStream xmlFile;
 
     /**
@@ -85,7 +86,7 @@ public final class EnvironmentBuilder<T> {
         xmlFile = xmlStream;
     }
 
-    private IAction<T> buildAction(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private Action<T> buildAction(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         return buildK(son, env, "it.unibo.alchemist.model.implementations.actions.");
     }
 
@@ -96,14 +97,14 @@ public final class EnvironmentBuilder<T> {
             if (!args.isEmpty()) {
                 arguments.add(args);
             }
-            final List<Constructor<IConcentration<T>>> list = unsafeExtractConstructors(concentrationClass);
+            final List<Constructor<Concentration<T>>> list = unsafeExtractConstructors(concentrationClass);
             return tryToBuild(list, arguments, subenv, random).getContent();
         }
-        error("concentration class not yet defined");
+        L.error("concentration class not yet defined");
         return null;
     }
 
-    private ICondition<T> buildCondition(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private Condition<T> buildCondition(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         return buildK(son, env, "it.unibo.alchemist.model.implementations.conditions.");
     }
 
@@ -146,7 +147,7 @@ public final class EnvironmentBuilder<T> {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         final DocumentBuilder builder = factory.newDocumentBuilder();
         final Document doc = builder.parse(xmlFile);
-        debug("Starting processing");
+        L.debug("Starting processing");
         random = null;
         final Node root = doc.getFirstChild();
         if (root.getNodeName().equals("environment") && doc.getChildNodes().getLength() == 1) {
@@ -166,7 +167,7 @@ public final class EnvironmentBuilder<T> {
                 for (int i = 0; i < children.getLength(); i++) {
                     final Node son = children.item(i);
                     final String kind = son.getNodeName();
-                    debug(kind);
+                    L.debug(kind);
                     if (!kind.equals(TEXT)) {
                         final Node sonNameAttr = son.getAttributes().getNamedItem(NAME);
                         final String sonName = sonNameAttr == null ? "" : sonNameAttr.getNodeValue();
@@ -192,8 +193,8 @@ public final class EnvironmentBuilder<T> {
                         } else if (kind.equals("reaction")) {
                             sonInstance = buildReaction(son, env);
                         } else if (kind.equals("node")) {
-                            final INode<T> node = buildNode(son, env);
-                            final IPosition pos = buildPosition(son, env);
+                            final it.unibo.alchemist.model.interfaces.Node<T> node = buildNode(son, env);
+                            final Position pos = buildPosition(son, env);
                             sonInstance = node;
                             result.addNode(node, pos);
                         } else if (kind.equals("time")) {
@@ -210,40 +211,40 @@ public final class EnvironmentBuilder<T> {
                  * passed in the specification, the simulation will still be
                  * reproducible.
                  */
-                random.setSeed(random.getSeed());
+                random.setSeed(seed);
             }
         } else {
-            error("XML does not contain one and one only environment.");
+            L.error("XML does not contain one and one only environment.");
         }
     }
 
-    private ILinkingRule<T> buildLinkingRule(final Node rootLinkingRule, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private LinkingRule<T> buildLinkingRule(final Node rootLinkingRule, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NamedNodeMap attributes = rootLinkingRule.getAttributes();
         // final Node nameNode = attributes.getNamedItem(NAME);
         final String name = "LINKINGRULE";
         String type = attributes.getNamedItem(TYPE).getNodeValue();
         type = type.contains(".") ? type : LINKINGRULES_DEFAULT_PACKAGE + type;
-        final ILinkingRule<T> res = coreOperations(env, rootLinkingRule, type, random);
+        final LinkingRule<T> res = coreOperations(env, rootLinkingRule, type, random);
         env.put(name, res);
         return res;
     }
 
-    private IMolecule buildMolecule(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private Molecule buildMolecule(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NamedNodeMap attributes = son.getAttributes();
         String type = attributes.getNamedItem(TYPE).getNodeValue();
         type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.molecules." + type;
         return coreOperations(env, son, type, random);
     }
 
-    private INode<T> buildNode(final Node rootNode, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private it.unibo.alchemist.model.interfaces.Node<T> buildNode(final Node rootNode, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NamedNodeMap attributes = rootNode.getAttributes();
         final Node nameNode = attributes.getNamedItem(NAME);
         final String name = nameNode == null ? "" : nameNode.getNodeValue();
         String type = attributes.getNamedItem(TYPE).getNodeValue();
         type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.nodes." + type;
-        final INode<T> res = coreOperations(env, rootNode, type, random);
+        final it.unibo.alchemist.model.interfaces.Node<T> res = coreOperations(env, rootNode, type, random);
         if (res == null) {
-            error("Failed to build " + type);
+            L.error("Failed to build " + type);
         }
         env.put(name, res);
         env.put("NODE", res);
@@ -257,11 +258,11 @@ public final class EnvironmentBuilder<T> {
                 String objType = null;
                 Object sonInstance = null;
                 if (kind.equals("condition")) {
-                    final ICondition<T> cond = buildCondition(son, env);
+                    final Condition<T> cond = buildCondition(son, env);
                     sonInstance = cond;
                     objType = "CONDITION";
                 } else if (kind.equals("action")) {
-                    final IAction<T> act = buildAction(son, env);
+                    final Action<T> act = buildAction(son, env);
                     sonInstance = act;
                     objType = "ACTION";
                 } else if (kind.equals("content")) {
@@ -269,26 +270,26 @@ public final class EnvironmentBuilder<T> {
                     for (int j = 0; j < moleculesMap.getLength(); j++) {
                         final Node molNode = moleculesMap.item(j);
                         final String molName = molNode.getNodeName();
-                        debug("checking molecule " + molName);
+                        L.debug("checking molecule " + molName);
                         if (env.containsKey(molName)) {
-                            debug(molName + " found");
+                            L.debug(molName + " found");
                             final Object molObj = env.get(molName);
-                            if (molObj instanceof IMolecule) {
-                                debug(molName + " matches in environment");
-                                final IMolecule mol = (IMolecule) molObj;
+                            if (molObj instanceof Molecule) {
+                                L.debug(molName + " matches in environment");
+                                final Molecule mol = (Molecule) molObj;
                                 final T conc = buildConcentration(molNode, env);
-                                debug(molName + " concentration: " + conc);
+                                L.debug(molName + " concentration: " + conc);
                                 sonInstance = conc;
                                 res.setConcentration(mol, conc);
                             } else {
-                                warn(molObj + "(class " + molObj.getClass().getCanonicalName() + " is not subclass of IMolecule!");
+                                L.warn(molObj + "(class " + molObj.getClass().getCanonicalName() + " is not subclass of Molecule!");
                             }
                         } else {
-                            warn("molecule " + molName + " is not yet defined.");
+                            L.warn("molecule " + molName + " is not yet defined.");
                         }
                     }
                 } else if (kind.equals("reaction")) {
-                    final IReaction<T> reaction = buildReaction(son, env);
+                    final Reaction<T> reaction = buildReaction(son, env);
                     res.addReaction(reaction);
                     sonInstance = reaction;
                     objType = "REACTION";
@@ -317,14 +318,14 @@ public final class EnvironmentBuilder<T> {
         }
     }
 
-    private IPosition buildPosition(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException {
+    private Position buildPosition(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException {
         if (positionClass == null) {
-            error("position class not yet defined.");
+            L.error("position class not yet defined.");
         } else {
             final NamedNodeMap attributes = son.getAttributes();
             final Node posNode = attributes.getNamedItem("position");
             if (posNode == null) {
-                warn("a node has no position!");
+                L.warn("a node has no position!");
             } else {
                 final String args = posNode.getNodeValue();
                 final StringTokenizer tk = new StringTokenizer(args, " ,;");
@@ -333,20 +334,20 @@ public final class EnvironmentBuilder<T> {
                     arguments.add(tk.nextToken());
                 }
                 arguments.trimToSize();
-                final List<Constructor<IPosition>> list = unsafeExtractConstructors(positionClass);
+                final List<Constructor<Position>> list = unsafeExtractConstructors(positionClass);
                 return tryToBuild(list, arguments, env, random);
             }
         }
         return null;
     }
 
-    private IReaction<T> buildReaction(final Node rootReact, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private Reaction<T> buildReaction(final Node rootReact, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NamedNodeMap attributes = rootReact.getAttributes();
         final Node nameNode = attributes.getNamedItem(NAME);
         final String name = nameNode == null ? "" : nameNode.getNodeValue();
         String type = attributes.getNamedItem(TYPE).getNodeValue();
         type = type.contains(".") ? type : REACTIONS_DEFAULT_PACKAGE + type;
-        final IReaction<T> res = coreOperations(env, rootReact, type, random);
+        final Reaction<T> res = coreOperations(env, rootReact, type, random);
         if (!name.equals("")) {
             env.put(name, res);
         }
@@ -355,14 +356,14 @@ public final class EnvironmentBuilder<T> {
         return res;
     }
 
-    private ITime buildTime(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private Time buildTime(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         return buildTime(son, env, random);
     }
 
-    private void populateReaction(final Map<String, Object> subenv, final IReaction<T> res, final Node rootReact) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private void populateReaction(final Map<String, Object> subenv, final Reaction<T> res, final Node rootReact) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NodeList children = rootReact.getChildNodes();
-        final ArrayList<ICondition<T>> conditions = new ArrayList<ICondition<T>>();
-        final ArrayList<IAction<T>> actions = new ArrayList<IAction<T>>();
+        final ArrayList<Condition<T>> conditions = new ArrayList<Condition<T>>();
+        final ArrayList<Action<T>> actions = new ArrayList<Action<T>>();
         for (int i = 0; i < children.getLength(); i++) {
             final Node son = children.item(i);
             final String kind = son.getNodeName();
@@ -371,11 +372,11 @@ public final class EnvironmentBuilder<T> {
                 final String sonName = sonNameAttr == null ? "" : sonNameAttr.getNodeValue();
                 Object sonInstance = null;
                 if (kind.equals("condition")) {
-                    final ICondition<T> cond = buildCondition(son, subenv);
+                    final Condition<T> cond = buildCondition(son, subenv);
                     conditions.add(cond);
                     sonInstance = cond;
                 } else if (kind.equals("action")) {
-                    final IAction<T> act = buildAction(son, subenv);
+                    final Action<T> act = buildAction(son, subenv);
                     actions.add(act);
                     sonInstance = act;
                 }
@@ -399,7 +400,7 @@ public final class EnvironmentBuilder<T> {
         String type = attributes.getNamedItem(TYPE).getNodeValue();
         type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.concentrations." + type;
         concentrationClass = Class.forName(type);
-        debug("Concentration type set to " + concentrationClass);
+        L.debug("Concentration type set to " + concentrationClass);
     }
 
     private void setPosition(final Node son) throws ClassNotFoundException {
@@ -409,7 +410,7 @@ public final class EnvironmentBuilder<T> {
             type = "it.unibo.alchemist.model.implementations.positions." + type;
         }
         positionClass = Class.forName(type);
-        debug("Position type set to " + positionClass);
+        L.debug("Position type set to " + positionClass);
     }
 
     private void setRandom(final Node son, final Map<String, Object> env) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
@@ -421,15 +422,16 @@ public final class EnvironmentBuilder<T> {
          * XMLs generated with the SAPERE DSL.
          */
         if (type.equals("cern.jet.random.engine.MersenneTwister")) {
-            type = "it.unibo.alchemist.external.cern.jet.random.engine.MersenneTwister";
+            type = "org.apache.commons.math3.random.MersenneTwister";
         }
-        type = type.contains(".") ? type : "it.unibo.alchemist.external.cern.jet.random.engine." + type;
+        type = type.contains(".") ? type : "org.apache.commons.math3.random." + type;
         seed = seed.equalsIgnoreCase("RANDOM") ? Integer.toString(internalRandom.nextInt()) : seed;
         final List<String> params = new ArrayList<>(1);
         params.add(seed);
         final Class<?> randomEngineClass = Class.forName(type);
-        final List<Constructor<RandomEngine>> consList = unsafeExtractConstructors(randomEngineClass);
+        final List<Constructor<RandomGenerator>> consList = unsafeExtractConstructors(randomEngineClass);
         random = tryToBuild(consList, params, env, null);
+        this.seed = Integer.parseInt(seed);
     }
 
     /**
@@ -438,20 +440,20 @@ public final class EnvironmentBuilder<T> {
      * @param seed
      *            the new random engine seed
      */
-    public void setRandomEngineSeed(final int seed) {
+    public void setRandomGeneratorSeed(final int seed) {
         random.setSeed(seed);
     }
 
 
-    private static ITime buildTime(final Node son, final Map<String, Object> env, final RandomEngine random) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private static Time buildTime(final Node son, final Map<String, Object> env, final RandomGenerator random) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NamedNodeMap attributes = son.getAttributes();
         String type = attributes.getNamedItem(TYPE).getNodeValue();
         type = type.contains(".") ? type : "it.unibo.alchemist.model.implementations.times." + type;
-        return (ITime) coreOperations(env, son, type, random);
+        return (Time) coreOperations(env, son, type, random);
     }
 
     @SuppressWarnings("unchecked")
-    private static <E> E coreOperations(final Map<String, Object> environment, final Node root, final String type, final RandomEngine random) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
+    private static <E> E coreOperations(final Map<String, Object> environment, final Node root, final String type, final RandomGenerator random) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         final NamedNodeMap atts = root.getAttributes();
         final Node nameNode = atts.getNamedItem(NAME);
         final String name = nameNode == null ? "" : nameNode.getNodeValue();
@@ -495,16 +497,16 @@ public final class EnvironmentBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object parseAndCreate(final Class<?> clazz, final String val, final Map<String, Object> env, final RandomEngine random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
-        if (clazz.isAssignableFrom(RandomEngine.class) && val.equalsIgnoreCase("random")) {
-            debug("Random detected! Class " + clazz.getSimpleName() + ", param: " + val);
+    private static Object parseAndCreate(final Class<?> clazz, final String val, final Map<String, Object> env, final RandomGenerator random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
+        if (clazz.isAssignableFrom(RandomGenerator.class) && val.equalsIgnoreCase("random")) {
+            L.debug("Random detected! Class " + clazz.getSimpleName() + ", param: " + val);
             if (random == null) {
-                error("Random instatiation required, but RandomEngine not yet defined.");
+                L.error("Random instatiation required, but RandomGenerator not yet defined.");
             }
             return random;
         }
         if (clazz.isPrimitive() || PrimitiveUtils.classIsWrapper(clazz)) {
-            debug(val + " is a primitive or a wrapper: " + clazz);
+            L.debug(val + " is a primitive or a wrapper: " + clazz);
             if ((clazz.isAssignableFrom(Boolean.TYPE) || clazz.isAssignableFrom(Boolean.class)) && (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false"))) {
                 return Boolean.parseBoolean(val);
             }
@@ -535,35 +537,35 @@ public final class EnvironmentBuilder<T> {
                 final String sub = strt.nextToken();
                 final Object o = tryToParse(sub, env, random);
                 if (o == null) {
-                    debug("WARNING: list elemnt skipped: " + sub);
+                    L.debug("WARNING: list elemnt skipped: " + sub);
                 } else {
                     list.add(o);
                 }
             }
             return list;
         }
-        debug(val + " is not a primitive: " + clazz + ". Searching it in the environment...");
+        L.debug(val + " is not a primitive: " + clazz + ". Searching it in the environment...");
         final Object o = env.get(val);
         if (o != null && clazz.isInstance(o)) {
             return o;
         }
-        if (ITime.class.isAssignableFrom(clazz)) {
+        if (Time.class.isAssignableFrom(clazz)) {
             return new DoubleTime(Double.parseDouble(val));
         }
         if (clazz.isAssignableFrom(String.class)) {
-            debug("String detected! Passing " + val + " back.");
+            L.debug("String detected! Passing " + val + " back.");
             return val;
         }
-        debug(val + " not found or class not compatible, unable to go further.");
+        L.debug(val + " not found or class not compatible, unable to go further.");
         return null;
     }
 
-    private static <E> E tryToBuild(final List<Constructor<E>> consList, final List<String> params, final Map<String, Object> env, final RandomEngine random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
+    private static <E> E tryToBuild(final List<Constructor<E>> consList, final List<String> params, final Map<String, Object> env, final RandomGenerator random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
         for (final Constructor<E> c : consList) {
-            debug("Trying to build with constructor " + c);
+            L.debug("Trying to build with constructor " + c);
             final Class<?>[] args = c.getParameterTypes();
             if (args.length == params.size()) {
-                debug("Parameters number matches (" + args.length + ").");
+                L.debug("Parameters number matches (" + args.length + ").");
                 final Object[] finalArgs = new Object[args.length];
                 int i = 0;
                 boolean success = true;
@@ -572,13 +574,13 @@ public final class EnvironmentBuilder<T> {
                     final Class<?> paramClass = args[i];
                     finalArgs[i] = parseAndCreate(paramClass, paramVal, env, random);
                     if (!paramVal.equals("null") && finalArgs[i] == null) {
-                        debug("Unable to use this constructor.");
+                        L.debug("Unable to use this constructor.");
                         success = false;
                     }
                 }
                 if (success && i == args.length) {
                     final E result = c.newInstance(finalArgs);
-                    // debug("Created object " + result);
+                    // L.debug("Created object " + result);
                     return result;
                 }
             }
@@ -586,7 +588,7 @@ public final class EnvironmentBuilder<T> {
         throw new IllegalArgumentException("no compatible constructor find for " + params);
     }
 
-    private static Object tryToParse(final String val, final Map<String, Object> env, final RandomEngine random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
+    private static Object tryToParse(final String val, final Map<String, Object> env, final RandomGenerator random) throws InstantiationException, IllegalAccessException, InvocationTargetException {
         for (final Class<?> clazz : TYPES) {
             final Object result = parseAndCreate(clazz, val, env, random);
             if (result != null) {
@@ -622,7 +624,7 @@ public final class EnvironmentBuilder<T> {
      * @param <T>
      *            the concentration type
      * 
-     * @return a {@link Future} result containing an {@link IEnvironment}
+     * @return a {@link Future} result containing an {@link Environment}
      */
     public static <T> Future<Result<T>> build(final InputStream xml) {
         return build(new EnvironmentBuilder<>(xml));
@@ -634,29 +636,30 @@ public final class EnvironmentBuilder<T> {
     public static final class Result<T> implements Serializable {
 
         private static final long serialVersionUID = -8733706297447819226L;
-        private final IEnvironment<T> env;
-        private final RandomEngine rng;
+        private final Environment<T> env;
+        @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "All the random engines provided by Apache are Serializable")
+        private final RandomGenerator rng;
 
-        private Result(final IEnvironment<T> environment, final RandomEngine random) {
+        private Result(final Environment<T> environment, final RandomGenerator random) {
             env = environment;
             rng = random;
         }
 
         /**
-         * @return the {@link IEnvironment}
+         * @return the {@link Environment}
          */
-        public IEnvironment<T> getEnvironment() {
+        public Environment<T> getEnvironment() {
             return env;
         }
 
         /**
-         * @return the {@link RandomEngine} used internally
+         * @return the {@link RandomGenerator} used internally
          */
-        public RandomEngine getRandomEngine() {
+        public RandomGenerator getRandomGenerator() {
             return rng;
         }
 
-        private static <T> Result<T> build(final IEnvironment<T> environment, final RandomEngine random) {
+        private static <T> Result<T> build(final Environment<T> environment, final RandomGenerator random) {
             return new Result<>(environment, random);
         }
 

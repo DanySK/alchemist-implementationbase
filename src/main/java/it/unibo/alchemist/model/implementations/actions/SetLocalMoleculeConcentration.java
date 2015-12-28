@@ -12,10 +12,10 @@
 package it.unibo.alchemist.model.implementations.actions;
 
 import it.unibo.alchemist.model.interfaces.Context;
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 /**
  *
@@ -34,13 +34,13 @@ public class SetLocalMoleculeConcentration<T> extends AbstractActionOnSingleMole
      * @param value
      *            the new concentration value for the molecule
      */
-    public SetLocalMoleculeConcentration(final INode<T> node, final IMolecule target, final T value) {
+    public SetLocalMoleculeConcentration(final Node<T> node, final Molecule target, final T value) {
         super(node, target);
         this.val = value;
     }
 
     @Override
-    public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
+    public Action<T> cloneOnNewNode(final Node<T> n, final Reaction<T> r) {
         return new SetLocalMoleculeConcentration<T>(n, getMolecule(), val);
     }
 

@@ -8,10 +8,10 @@
  */
 package it.unibo.alchemist.model.implementations.reactions;
 
-import it.unibo.alchemist.model.interfaces.ICondition;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Condition;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 /**
@@ -30,19 +30,19 @@ public class ChemicalReaction<T> extends AReaction<T> {
      * @param pd
      *            time distribution
      */
-    public ChemicalReaction(final INode<T> n, final TimeDistribution<T> pd) {
+    public ChemicalReaction(final Node<T> n, final TimeDistribution<T> pd) {
         super(n, pd);
     }
 
     @Override
-    public ChemicalReaction<T> cloneOnNewNode(final INode<T> n) {
+    public ChemicalReaction<T> cloneOnNewNode(final Node<T> n) {
         return new ChemicalReaction<>(n, getTimeDistribution().clone());
     }
 
     @Override
-    protected void updateInternalStatus(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
+    protected void updateInternalStatus(final Time curTime, final boolean executed, final Environment<T> env) {
         currentRate = getTimeDistribution().getRate();
-        for (final ICondition<T> cond : getConditions()) {
+        for (final Condition<T> cond : getConditions()) {
             final double v = cond.getPropensityConditioning();
             if (v == 0) {
                 currentRate = 0;

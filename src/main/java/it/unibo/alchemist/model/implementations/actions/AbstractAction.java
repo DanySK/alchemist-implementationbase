@@ -11,9 +11,9 @@
  */
 package it.unibo.alchemist.model.implementations.actions;
 
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +25,11 @@ import java.util.Optional;
  * 
  * @param <T>
  */
-public abstract class AbstractAction<T> implements IAction<T> {
+public abstract class AbstractAction<T> implements Action<T> {
 
     private static final long serialVersionUID = 1858501940105283451L;
-    private final List<IMolecule> influenced = new ArrayList<IMolecule>(1);
-    private final INode<T> n;
+    private final List<Molecule> influenced = new ArrayList<Molecule>(1);
+    private final Node<T> n;
 
     /**
      * Call this constructor in the subclasses in order to automatically
@@ -38,31 +38,31 @@ public abstract class AbstractAction<T> implements IAction<T> {
      * @param node
      *            the node this action belongs to
      */
-    protected AbstractAction(final INode<T> node) {
+    protected AbstractAction(final Node<T> node) {
         this.n = node;
     }
 
     /**
      * @return the node this action belongs to
      */
-    public INode<T> getNode() {
+    public Node<T> getNode() {
         return n;
     }
 
     @Override
-    public List<? extends IMolecule> getModifiedMolecules() {
+    public List<? extends Molecule> getModifiedMolecules() {
         return influenced;
     }
 
     /**
-     * Allows to add an IMolecule to the set of molecules which are modified by
+     * Allows to add an Molecule to the set of molecules which are modified by
      * this action. This method must be called in the constructor, and not
      * during the execution.
      * 
      * @param m
      *            the molecule which will be modified
      */
-    protected void addModifiedMolecule(final IMolecule m) {
+    protected void addModifiedMolecule(final Molecule m) {
         influenced.add(m);
     }
 
@@ -71,7 +71,7 @@ public abstract class AbstractAction<T> implements IAction<T> {
      *            the molecule
      * @return true if the local node contains the molecule
      */
-    protected final boolean nodeContains(final IMolecule m) {
+    protected final boolean nodeContains(final Molecule m) {
         return getNode().contains(m);
     }
 
@@ -80,9 +80,9 @@ public abstract class AbstractAction<T> implements IAction<T> {
      *            the molecule
      * @return An {@link Optional} with the value of concentration, or an empty
      *         {@link Optional} if the molecule if
-     *         {@link INode#getConcentration(IMolecule)} returns null
+     *         {@link Node#getConcentration(Molecule)} returns null
      */
-    protected final Optional<T> getConcentration(final IMolecule m) {
+    protected final Optional<T> getConcentration(final Molecule m) {
         return Optional.ofNullable(getNode().getConcentration(m));
     }
 

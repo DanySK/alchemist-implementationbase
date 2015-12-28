@@ -12,7 +12,7 @@
 package it.unibo.alchemist.model.implementations.positions;
 
 import it.unibo.alchemist.exceptions.UncomparableDistancesException;
-import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.model.interfaces.Position;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
  * discrete environments. The distance between two nodes is computed as
  * Manhattan distance.
  */
-public final class Discrete2DManhattan implements IPosition {
+public final class Discrete2DManhattan implements Position {
 
     private static final int MASK = 0x0000FFFF;
     private static final long serialVersionUID = 4773955346963361299L;
@@ -43,7 +43,7 @@ public final class Discrete2DManhattan implements IPosition {
     }
 
     @Override
-    public List<IPosition> buildBoundingBox(final double r) {
+    public List<Position> buildBoundingBox(final double r) {
         final int range = (int) r;
         final Discrete2DManhattan bl = new Discrete2DManhattan(xCoord - range, yCoord - range);
         final Discrete2DManhattan ur = new Discrete2DManhattan(xCoord + range, yCoord + range);
@@ -51,7 +51,7 @@ public final class Discrete2DManhattan implements IPosition {
     }
 
     @Override
-    public int compareTo(final IPosition o) {
+    public int compareTo(final Position o) {
         if (o.getDimensions() > 2) {
             return -1;
         }
@@ -105,7 +105,7 @@ public final class Discrete2DManhattan implements IPosition {
     }
 
     @Override
-    public double getDistanceTo(final IPosition p) {
+    public double getDistanceTo(final Position p) {
         try {
             final Discrete2DManhattan d = (Discrete2DManhattan) p;
             return Math.abs(xCoord - d.xCoord) + Math.abs(yCoord - d.yCoord);
@@ -125,7 +125,7 @@ public final class Discrete2DManhattan implements IPosition {
     }
 
     @Override
-    public IPosition sum(final IPosition other) {
+    public Position sum(final Position other) {
         if (other instanceof Discrete2DManhattan) {
             final Discrete2DManhattan o = (Discrete2DManhattan) other;
             return new Discrete2DManhattan(xCoord + o.xCoord, yCoord + o.yCoord);

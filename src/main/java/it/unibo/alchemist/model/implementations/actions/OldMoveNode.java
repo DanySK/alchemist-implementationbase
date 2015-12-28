@@ -12,12 +12,12 @@
 package it.unibo.alchemist.model.implementations.actions;
 
 import it.unibo.alchemist.model.interfaces.Context;
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 /**
  * This action moves a node inside a given environment.
@@ -29,8 +29,8 @@ public class OldMoveNode<T> extends AbstractMoveNode<T> {
 
     private static final long serialVersionUID = -5867654295577425307L;
 
-    private IPosition dir;
-    private final IMolecule move;
+    private Position dir;
+    private final Molecule move;
 
     /**
      * Builds a new move node action.
@@ -48,7 +48,7 @@ public class OldMoveNode<T> extends AbstractMoveNode<T> {
      *            conditions that check the number of neighborhoods. If no
      *            conditions of this kind are present, just pass null.
      */
-    public OldMoveNode(final IEnvironment<T> environment, final INode<T> node, final IPosition direction, final IMolecule movetag) {
+    public OldMoveNode(final Environment<T> environment, final Node<T> node, final Position direction, final Molecule movetag) {
         super(environment, node);
         dir = direction;
         this.move = movetag;
@@ -56,7 +56,7 @@ public class OldMoveNode<T> extends AbstractMoveNode<T> {
     }
 
     @Override
-    public IAction<T> cloneOnNewNode(final INode<T> node, final IReaction<T> reaction) {
+    public Action<T> cloneOnNewNode(final Node<T> node, final Reaction<T> reaction) {
         return new OldMoveNode<T>(getEnvironment(), node, dir, move);
     }
 
@@ -75,14 +75,14 @@ public class OldMoveNode<T> extends AbstractMoveNode<T> {
     /**
      * @return the set direction
      */
-    public IPosition getDirection() {
+    public Position getDirection() {
         return dir;
     }
 
     /**
      * @return the signal molecule
      */
-    public IMolecule getMove() {
+    public Molecule getMove() {
         return move;
     }
 
@@ -93,12 +93,12 @@ public class OldMoveNode<T> extends AbstractMoveNode<T> {
      * @param direction
      *            the direction where to move
      */
-    protected void setDirection(final IPosition direction) {
+    protected void setDirection(final Position direction) {
         this.dir = direction;
     }
 
     @Override
-    public IPosition getNextPosition() {
+    public Position getNextPosition() {
         return dir;
     }
 

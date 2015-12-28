@@ -13,7 +13,7 @@ package it.unibo.alchemist.model.implementations.molecules;
 
 import org.danilopianini.lang.util.FasterString;
 
-import it.unibo.alchemist.model.interfaces.IMolecule;
+import it.unibo.alchemist.model.interfaces.Molecule;
 
 
 /**
@@ -21,7 +21,7 @@ import it.unibo.alchemist.model.interfaces.IMolecule;
  *         Singleton Pattern, no thread safeness is provided.
  * 
  */
-public class Molecule implements IMolecule {
+public class SimpleMolecule implements Molecule {
 
     private static final long serialVersionUID = 2727376723102146271L;
 
@@ -31,7 +31,7 @@ public class Molecule implements IMolecule {
      * @param name
      *            the molecule name
      */
-    public Molecule(final String name) {
+    public SimpleMolecule(final String name) {
         this(new FasterString(name));
     }
 
@@ -39,19 +39,19 @@ public class Molecule implements IMolecule {
      * @param name
      *            the molecule name
      */
-    public Molecule(final FasterString name) {
+    public SimpleMolecule(final FasterString name) {
         this.n = name;
     }
 
     @Override
-    public boolean dependsOn(final IMolecule mol) {
+    public boolean dependsOn(final Molecule mol) {
         return equals(mol);
     }
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof Molecule) {
-            return ((Molecule) obj).n.equals(n);
+        if (obj instanceof SimpleMolecule) {
+            return ((SimpleMolecule) obj).n.equals(n);
         }
         return false;
     }
@@ -72,7 +72,7 @@ public class Molecule implements IMolecule {
     }
 
     /**
-     * @return a {@link FasterString} version of this {@link Molecule}
+     * @return a {@link FasterString} version of this {@link SimpleMolecule}
      */
     public final FasterString toFasterString() {
         return n;

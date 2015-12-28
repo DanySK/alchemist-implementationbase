@@ -10,14 +10,13 @@ package it.unibo.alchemist.boundary.monitors;
 
 import gnu.trove.list.TDoubleList;
 import gnu.trove.list.array.TDoubleArrayList;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.Incarnation;
-import it.unibo.alchemist.utils.L;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -26,12 +25,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.danilopianini.lang.CollectionWithCurrentElement;
 import org.danilopianini.lang.HashUtils;
 import org.danilopianini.lang.ImmutableCollectionWithCurrentElement;
 import org.danilopianini.view.ExportForGUI;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @param <T>
@@ -41,11 +43,11 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 
     private static final long serialVersionUID = 6602681089557080486L;
 
-    private static final List<Incarnation> INCARNATIONS = new LinkedList<>();
+    private static final Logger L = LoggerFactory.getLogger(NodeInspector.class);
+    private static final List<Incarnation<?>> INCARNATIONS = new LinkedList<>();
 
     @ExportForGUI(nameToExport = "Incarnation")
-    private transient CollectionWithCurrentElement<Incarnation> incarnation = 
-            new ImmutableCollectionWithCurrentElement<>(INCARNATIONS, INCARNATIONS.get(0));
+    private transient CollectionWithCurrentElement<Incarnation<T>> incarnation = makeIncarnation();
     @ExportForGUI(nameToExport = "Track id")
     private boolean trackId;
     @ExportForGUI(nameToExport = "Track position")
@@ -59,21 +61,26 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 
     private String propertyCache;
     private String molCache;
-    private transient List<IMolecule> mol;
+    private transient List<Molecule> mol;
     private final List<String> properties = new LinkedList<>();
     private int initSize = 1;
 
     static {
         final Reflections reflections = new Reflections("it.unibo.alchemist");
-        for (final Class<? extends Incarnation> clazz : reflections.getSubTypesOf(Incarnation.class)) {
+        for (@SuppressWarnings("rawtypes") final Class<? extends Incarnation> clazz : reflections.getSubTypesOf(Incarnation.class)) {
             try {
                 INCARNATIONS.add(clazz.newInstance());
-            } catch (InstantiationException e) {
-                L.warn(e);
-            } catch (IllegalAccessException e) {
-                L.warn(e);
+            } catch (InstantiationException | IllegalAccessException e) {
+                L.warn("Could not initialize incarnation {}", clazz);
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private CollectionWithCurrentElement<Incarnation<T>> makeIncarnation() {
+        return new ImmutableCollectionWithCurrentElement<>(
+                INCARNATIONS.stream().map(i -> (Incarnation<T>) i).collect(Collectors.toList()),
+                (Incarnation<T>) INCARNATIONS.get(0));
     }
 
     private <R> void tokenize(final List<R> result, final String base, final Function<String, R> supplier) {
@@ -84,8 +91,8 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
     }
 
     @Override
-    protected double[] getProperties(final IEnvironment<T> env, final INode<T> sample, final IReaction<T> r,
-            final ITime time, final long step) {
+    protected double[] getProperties(final Environment<T> env, final Node<T> sample, final Reaction<T> r,
+            final Time time, final long step) {
         if (!HashUtils.pointerEquals(propertyCache, property)) {
             propertyCache = property;
             properties.clear();
@@ -101,10 +108,10 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
             res.add(sample.getId());
         }
         if (trackPos) {
-            final IPosition pos = env.getPosition(sample);
+            final Position pos = env.getPosition(sample);
             res.add(pos.getCartesianCoordinates());
         }
-        for (final IMolecule m : mol) {
+        for (final Molecule m : mol) {
             for (final String prop : properties) {
                 res.add(incarnation.getCurrent().getProperty(sample, m, prop));
             }
@@ -116,7 +123,7 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
     /**
      * @return the incarnation
      */
-    public CollectionWithCurrentElement<Incarnation> getIncarnation() {
+    public CollectionWithCurrentElement<Incarnation<T>> getIncarnation() {
         return incarnation;
     }
 
@@ -124,7 +131,7 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
      * @param inc
      *            the incarnation
      */
-    public void setIncarnation(final CollectionWithCurrentElement<Incarnation> inc) {
+    public void setIncarnation(final CollectionWithCurrentElement<Incarnation<T>> inc) {
         this.incarnation = inc;
     }
 
@@ -175,7 +182,7 @@ public class NodeInspector<T> extends AbstractNodeInspector<T> {
 
     private void readObject(final ObjectInputStream s) throws ClassNotFoundException, IOException {
         s.defaultReadObject();
-        incarnation = new ImmutableCollectionWithCurrentElement<Incarnation>(INCARNATIONS, INCARNATIONS.get(0));
+        incarnation = makeIncarnation();
     }
 
 }

@@ -11,8 +11,8 @@
  */
 package it.unibo.alchemist.model.implementations.actions;
 
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
 
 /**
  * This class offers the basic structures to provide operations with numeric
@@ -23,7 +23,7 @@ import it.unibo.alchemist.model.interfaces.INode;
 public abstract class AbstractActionOnSingleMolecule<T> extends AbstractAction<T> {
 
     private static final long serialVersionUID = 5506733553861927362L;
-    private final IMolecule mol;
+    private final Molecule mol;
 
     /**
      * Call this constructor in the subclasses in order to automatically
@@ -35,8 +35,8 @@ public abstract class AbstractActionOnSingleMolecule<T> extends AbstractAction<T
      *            the molecule which whose concentration will be modified y the
      *            execution of this action
      */
-    protected AbstractActionOnSingleMolecule(final INode<T> node,
-            final IMolecule molecule) {
+    protected AbstractActionOnSingleMolecule(final Node<T> node,
+            final Molecule molecule) {
         super(node);
         this.mol = molecule;
         addModifiedMolecule(molecule);
@@ -46,7 +46,7 @@ public abstract class AbstractActionOnSingleMolecule<T> extends AbstractAction<T
      * @return the molecule which whose concentration will be modified y the
      *         execution of this action
      */
-    public IMolecule getMolecule() {
+    public Molecule getMolecule() {
         return mol;
     }
 

@@ -8,11 +8,11 @@
  */
 package it.unibo.alchemist.model.implementations.actions;
 
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 /**
  * Fake movement class, used only to trigger the neighborhood update.
@@ -29,17 +29,17 @@ public class FakeMove<T> extends AbstractMoveNode<T> {
      * @param node
      *            the node
      */
-    public FakeMove(final IEnvironment<T> environment, final INode<T> node) {
+    public FakeMove(final Environment<T> environment, final Node<T> node) {
         super(environment, node, true);
     }
 
     @Override
-    public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
+    public Action<T> cloneOnNewNode(final Node<T> n, final Reaction<T> r) {
         return new FakeMove<>(getEnvironment(), n);
     }
 
     @Override
-    public IPosition getNextPosition() {
+    public Position getNextPosition() {
         return getEnvironment().getPosition(getNode());
     }
 

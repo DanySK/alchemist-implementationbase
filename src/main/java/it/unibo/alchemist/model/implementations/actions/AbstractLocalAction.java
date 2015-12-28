@@ -9,7 +9,7 @@
 package it.unibo.alchemist.model.implementations.actions;
 
 import it.unibo.alchemist.model.interfaces.Context;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.Node;
 
 /**
  * @param <T>
@@ -22,7 +22,7 @@ public abstract class AbstractLocalAction<T> extends AbstractAction<T> {
     /**
      * @param node the local node
      */
-    protected AbstractLocalAction(final INode<T> node) {
+    protected AbstractLocalAction(final Node<T> node) {
         super(node);
     }
 

@@ -8,23 +8,25 @@
  */
 package it.unibo.alchemist.boundary.monitors;
 
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.utils.L;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.danilopianini.view.ExportForGUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @param <T>
  */
-public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<T>, T> {
+public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<Node<T>, T> {
 
     private static final long serialVersionUID = 5078169056849107817L;
+    private static final Logger L = LoggerFactory.getLogger(AbstractNodeInspector.class);
 
     @ExportForGUI(nameToExport = "Only consider node with ID in a specific range")
     private boolean filterids;
@@ -38,7 +40,7 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
     private int maxId = Integer.MAX_VALUE;
 
     @Override
-    protected Iterable<INode<T>> computeSamples(final IEnvironment<T> env, final IReaction<T> r, final ITime time,
+    protected Iterable<Node<T>> computeSamples(final Environment<T> env, final Reaction<T> r, final Time time,
             final long step) {
         final boolean filter = filterids;
         if (filter && !idrange.equals(idrangeCache)) {
@@ -52,7 +54,7 @@ public abstract class AbstractNodeInspector<T> extends EnvironmentSampler<INode<
                     }
                 }
             } catch (NumberFormatException e) {
-                L.warn(e);
+                L.warn("minId or maxId are not integers", e);
             }
         }
         final int fminId = minId;

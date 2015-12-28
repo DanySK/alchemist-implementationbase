@@ -11,20 +11,20 @@
  */
 package it.unibo.alchemist.model.implementations.positions;
 
-import it.unibo.alchemist.exceptions.UncomparableDistancesException;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.utils.MathUtils;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.math3.util.MathArrays;
 import org.danilopianini.lang.HashUtils;
+
+import it.unibo.alchemist.exceptions.UncomparableDistancesException;
+import it.unibo.alchemist.model.interfaces.Position;
 
 /**
  */
-public class ContinuousGenericEuclidean implements IPosition {
+public class ContinuousGenericEuclidean implements Position {
 
     /**
      * 
@@ -53,7 +53,7 @@ public class ContinuousGenericEuclidean implements IPosition {
     }
 
     @Override
-    public List<IPosition> buildBoundingBox(final double range) {
+    public List<Position> buildBoundingBox(final double range) {
         return IntStream.range(0, getDimensions()).parallel()
             .mapToObj(i -> {
                 final double[] coords = new double[c.length];
@@ -69,7 +69,7 @@ public class ContinuousGenericEuclidean implements IPosition {
     }
 
     @Override
-    public int compareTo(final IPosition o) {
+    public int compareTo(final Position o) {
         if (c.length < o.getDimensions()) {
             return -1;
         }
@@ -90,8 +90,8 @@ public class ContinuousGenericEuclidean implements IPosition {
 
     @Override
     public boolean equals(final Object o) {
-        if (o instanceof IPosition) {
-            return samePosition((IPosition) o);
+        if (o instanceof Position) {
+            return samePosition((Position) o);
         } else {
             return false;
         }
@@ -116,10 +116,10 @@ public class ContinuousGenericEuclidean implements IPosition {
     }
 
     @Override
-    public double getDistanceTo(final IPosition p) {
+    public double getDistanceTo(final Position p) {
         final double[] coord = p.getCartesianCoordinates();
         if (c.length == coord.length) {
-            return MathUtils.getEuclideanDistance(c, coord);
+            return MathArrays.distance(c, coord);
         } else {
             throw new UncomparableDistancesException(this, p);
         }
@@ -138,7 +138,7 @@ public class ContinuousGenericEuclidean implements IPosition {
      *            the position to compare with
      * @return true if the two positions are the the same
      */
-    public boolean samePosition(final IPosition o) {
+    public boolean samePosition(final Position o) {
         final double[] p = o.getCartesianCoordinates();
         return Arrays.equals(c, p);
     }
@@ -152,7 +152,7 @@ public class ContinuousGenericEuclidean implements IPosition {
     }
 
     @Override
-    public IPosition sum(final IPosition other) {
+    public Position sum(final Position other) {
         assert getDimensions() == other.getDimensions();
         double[] res = other.getCartesianCoordinates();
         for (int i = 0; i < res.length; i++) {

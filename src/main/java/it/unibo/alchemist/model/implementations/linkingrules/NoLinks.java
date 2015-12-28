@@ -8,11 +8,11 @@
  */
 package it.unibo.alchemist.model.implementations.linkingrules;
 
-import it.unibo.alchemist.model.implementations.neighborhoods.Neighborhood;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.ILinkingRule;
-import it.unibo.alchemist.model.interfaces.INeighborhood;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.implementations.neighborhoods.CachedNeighborhood;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.LinkingRule;
+import it.unibo.alchemist.model.interfaces.Neighborhood;
+import it.unibo.alchemist.model.interfaces.Node;
 
 import java.util.Collections;
 
@@ -21,13 +21,13 @@ import java.util.Collections;
  * 
  * @param <T>
  */
-public class NoLinks<T> implements ILinkingRule<T> {
+public class NoLinks<T> implements LinkingRule<T> {
 
     private static final long serialVersionUID = -711043794655618585L;
 
     @Override
-    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-        return new Neighborhood<>(center, Collections.emptyList(), env);
+    public Neighborhood<T> computeNeighborhood(final Node<T> center, final Environment<T> env) {
+        return new CachedNeighborhood<>(center, Collections.emptyList(), env);
     }
 
 }
