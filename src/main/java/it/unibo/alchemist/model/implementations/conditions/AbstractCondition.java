@@ -11,9 +11,9 @@
  */
 package it.unibo.alchemist.model.implementations.conditions;
 
-import it.unibo.alchemist.model.interfaces.ICondition;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.interfaces.Condition;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,33 +23,33 @@ import java.util.List;
  *
  * @param <T>
  */
-public abstract class AbstractCondition<T> implements ICondition<T> {
+public abstract class AbstractCondition<T> implements Condition<T> {
 
     private static final long serialVersionUID = -1610947908159507754L;
-    private final List<IMolecule> influencing = new ArrayList<IMolecule>(1);
-    private final INode<T> n;
+    private final List<Molecule> influencing = new ArrayList<Molecule>(1);
+    private final Node<T> n;
 
     /**
      * @param node the node this Condition belongs to
      */
-    public AbstractCondition(final INode<T> node) {
+    public AbstractCondition(final Node<T> node) {
         this.n = node;
     }
 
     @Override
-    public List<? extends IMolecule> getInfluencingMolecules() {
+    public List<? extends Molecule> getInfluencingMolecules() {
         return influencing;
     }
 
     @Override
-    public INode<T> getNode() {
+    public Node<T> getNode() {
         return n;
     }
 
     /**
      * @param m the molecule to add
      */
-    protected void addReadMolecule(final IMolecule m) {
+    protected void addReadMolecule(final Molecule m) {
         influencing.add(m);
     }
 }

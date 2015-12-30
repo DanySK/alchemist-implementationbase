@@ -11,9 +11,9 @@
  */
 package it.unibo.alchemist.model.implementations.reactions;
 
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 /**
@@ -31,12 +31,12 @@ public class Event<T> extends AReaction<T> {
      * @param node the node this {@link Event} belongs to
      * @param timedist the {@link TimeDistribution} this event should use
      */
-    public Event(final INode<T> node, final TimeDistribution<T> timedist) {
+    public Event(final Node<T> node, final TimeDistribution<T> timedist) {
         super(node, timedist);
     }
 
     @Override
-    protected void updateInternalStatus(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
+    protected void updateInternalStatus(final Time curTime, final boolean executed, final Environment<T> env) {
     }
 
     @Override
@@ -45,7 +45,7 @@ public class Event<T> extends AReaction<T> {
     }
 
     @Override
-    public Event<T> cloneOnNewNode(final INode<T> n) {
+    public Event<T> cloneOnNewNode(final Node<T> n) {
         return new Event<>(n, getTimeDistribution().clone());
     }
 

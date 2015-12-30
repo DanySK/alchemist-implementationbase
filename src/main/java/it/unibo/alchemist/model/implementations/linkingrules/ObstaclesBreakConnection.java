@@ -8,11 +8,11 @@
  */
 package it.unibo.alchemist.model.implementations.linkingrules;
 
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IEnvironment2DWithObstacles;
-import it.unibo.alchemist.model.interfaces.INeighborhood;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Environment2DWithObstacles;
+import it.unibo.alchemist.model.interfaces.Neighborhood;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
 
 /**
  * Similar to {@link EuclideanDistance}, but if the environment has obstacles,
@@ -33,15 +33,15 @@ public class ObstaclesBreakConnection<T> extends EuclideanDistance<T> {
     }
 
     @Override
-    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-        final INeighborhood<T> normal = super.computeNeighborhood(center, env);
-        if (!normal.isEmpty() && env instanceof IEnvironment2DWithObstacles) {
-            final IPosition cp = env.getPosition(center);
+    public Neighborhood<T> computeNeighborhood(final Node<T> center, final Environment<T> env) {
+        final Neighborhood<T> normal = super.computeNeighborhood(center, env);
+        if (!normal.isEmpty() && env instanceof Environment2DWithObstacles) {
+            final Position cp = env.getPosition(center);
             @SuppressWarnings("unchecked")
-            final IEnvironment2DWithObstacles<?, T> environment = (IEnvironment2DWithObstacles<?, T>) env;
+            final Environment2DWithObstacles<?, T> environment = (Environment2DWithObstacles<?, T>) env;
             for (int i = 0; i < normal.size(); i++) {
-                final INode<T> node = normal.getNeighborByNumber(i);
-                final IPosition np = environment.getPosition(node);
+                final Node<T> node = normal.getNeighborByNumber(i);
+                final Position np = environment.getPosition(node);
                 if (environment.intersectsObstacle(cp, np)) {
                     normal.removeNeighbor(node);
                     i--;

@@ -6,14 +6,15 @@
  * the GNU General Public License, with a linking exception, as described
  * in the file LICENSE in the Alchemist distribution's top directory.
  */
-package it.unibo.alchemist.model.implementations.probabilitydistributions;
+package it.unibo.alchemist.model.implementations.timedistributions;
+
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.util.FastMath;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unibo.alchemist.external.cern.jet.random.Exponential;
-import it.unibo.alchemist.external.cern.jet.random.engine.RandomEngine;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Time;
 
 /**
  * Markovian events.
@@ -24,17 +25,17 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
 
     private static final long serialVersionUID = 5216987069271114818L;
     private double oldPropensity = -1;
-    private final Exponential exp;
-    private final RandomEngine rand;
+    @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "All the random engines provided by Apache are Serializable")
+    private final RandomGenerator rand;
     private final double rate;
 
     /**
      * @param markovianRate
      *            Markovian rate for this distribution
      * @param random
-     *            {@link RandomEngine} used internally
+     *            {@link RandomGenerator} used internally
      */
-    public ExponentialTime(final double markovianRate, final RandomEngine random) {
+    public ExponentialTime(final double markovianRate, final RandomGenerator random) {
         this(markovianRate, new DoubleTime(), random);
     }
 
@@ -44,21 +45,20 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
      * @param start
      *            initial time
      * @param random
-     *            {@link RandomEngine} used internally
+     *            {@link RandomGenerator} used internally
      */
-    public ExponentialTime(final double markovianRate, final ITime start, final RandomEngine random) {
+    public ExponentialTime(final double markovianRate, final Time start, final RandomGenerator random) {
         super(start);
         rate = markovianRate;
         rand = random;
-        exp = new Exponential(rand);
     }
 
     @Override
     public void updateStatus(
-            final ITime curTime,
+            final Time curTime,
             final boolean executed,
             final double newpropensity,
-            final IEnvironment<T> env) {
+            final Environment<T> env) {
         assert !Double.isNaN(newpropensity);
         assert !Double.isNaN(oldPropensity);
         if (oldPropensity == 0 && newpropensity != 0) {
@@ -72,16 +72,16 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
     }
 
     @SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
-    private void update(final double newpropensity, final boolean isMu, final ITime curTime) {
+    private void update(final double newpropensity, final boolean isMu, final Time curTime) {
         assert !Double.isNaN(newpropensity);
         assert !Double.isNaN(oldPropensity);
         if (isMu) {
-            final ITime dt = genTime(newpropensity);
+            final Time dt = genTime(newpropensity);
             setTau(curTime.sum(dt));
         } else {
             if (oldPropensity != newpropensity) {
-                final ITime sub = getNextOccurence().subtract(curTime);
-                final ITime mul = sub.multiply(oldPropensity / newpropensity);
+                final Time sub = getNextOccurence().subtract(curTime);
+                final Time mul = sub.multiply(oldPropensity / newpropensity);
                 setTau(mul.sum(curTime));
             }
         }
@@ -93,8 +93,12 @@ public class ExponentialTime<T> extends AbstractDistribution<T> {
      * @return the next occurrence time for the reaction, in case this is the
      *         reaction which have been executed.
      */
-    protected ITime genTime(final double propensity) {
-        return new DoubleTime(exp.nextDouble(propensity));
+    protected Time genTime(final double propensity) {
+        return new DoubleTime(uniformToExponential(propensity));
+    }
+
+    private double uniformToExponential(final double lambda) {
+        return -FastMath.log1p(-rand.nextDouble()) / lambda;
     }
 
     @Override

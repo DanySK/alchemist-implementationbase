@@ -8,35 +8,37 @@
  */
 package it.unibo.alchemist.boundary.monitors;
 
-import static it.unibo.alchemist.utils.MathUtils.nextDown;
 import static org.apache.commons.math3.util.FastMath.nextUp;
 import static org.apache.commons.math3.util.FastMath.round;
 import static org.apache.commons.math3.util.FastMath.sqrt;
+import static org.apache.commons.math3.util.FastMath.nextDown;
 import it.unibo.alchemist.model.implementations.positions.Continuous2DEuclidean;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IEnvironment2DWithObstacles;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.utils.L;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Environment2DWithObstacles;
+import it.unibo.alchemist.model.interfaces.Position;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
 import org.danilopianini.lang.HashUtils;
 import org.danilopianini.view.ExportForGUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @param <T>
  */
 @ExportInspector
-public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T> {
+public abstract class PositionSampler<T> extends EnvironmentSampler<Position, T> {
 
     /**
      * 
      */
     public static final int DEFAULT_SAMPLES = 100;
+    private static final Logger L = LoggerFactory.getLogger(PositionSampler.class);
 
     private static final long serialVersionUID = -4687082644114909198L;
 
@@ -44,14 +46,14 @@ public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T
     private String samples = Integer.toString(DEFAULT_SAMPLES);
 
     private String sCache;
-    private Iterable<IPosition> result;
-    private IEnvironment<T> envCache;
+    private Iterable<Position> result;
+    private Environment<T> envCache;
 
     @Override
-    protected Iterable<IPosition> computeSamples(
-            final IEnvironment<T> env,
-            final IReaction<T> r,
-            final ITime time,
+    protected Iterable<Position> computeSamples(
+            final Environment<T> env,
+            final Reaction<T> r,
+            final Time time,
             final long step) {
         if (!HashUtils.pointerEquals(samples, sCache) || !HashUtils.pointerEquals(env, envCache)) {
             envCache = env;
@@ -67,13 +69,13 @@ public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T
                     final int ny = (int) round(sqrt(sy / sx * n));
                     final double stepx = sx / nx;
                     final double stepy = sy / ny;
-                    final IEnvironment2DWithObstacles<?, ?> oenv = env instanceof IEnvironment2DWithObstacles<?, ?>
-                            ? (IEnvironment2DWithObstacles<?, ?>) env
+                    final Environment2DWithObstacles<?, ?> oenv = env instanceof Environment2DWithObstacles<?, ?>
+                            ? (Environment2DWithObstacles<?, ?>) env
                             : null;
                     result = IntStream.range(0, n).collect(ArrayList::new, (array, i) -> {
                         final double px = dx + stepx * (i % nx);
                         final double py = dy + stepy * ((i / nx) % ny);
-                        final IPosition pos = new Continuous2DEuclidean(px, py);
+                        final Position pos = new Continuous2DEuclidean(px, py);
                         if (oenv == null || !oenv.intersectsObstacle(nextDown(px), nextDown(py), nextUp(px), nextUp(py))) {
                             array.add(pos);
                         }
@@ -82,8 +84,7 @@ public abstract class PositionSampler<T> extends EnvironmentSampler<IPosition, T
                     L.warn("Update discarded: Samples must be a positive integer value.");
                 }
             } catch (NumberFormatException e) {
-                L.warn("Update discarded: Samples must be a positive integer value.");
-                L.error(e);
+                L.warn("Update discarded: Samples must be a positive integer value.", e);
             }
         }
         return result;

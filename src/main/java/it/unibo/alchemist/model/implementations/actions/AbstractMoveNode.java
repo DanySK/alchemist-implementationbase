@@ -12,9 +12,9 @@
 package it.unibo.alchemist.model.implementations.actions;
 
 import it.unibo.alchemist.model.interfaces.Context;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
 
 /**
  * This action moves a node inside a given environment.
@@ -24,7 +24,7 @@ import it.unibo.alchemist.model.interfaces.IPosition;
 public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
 
     private static final long serialVersionUID = -5867654295577425307L;
-    private final IEnvironment<T> env;
+    private final Environment<T> env;
     private final boolean isAbs;
 
     /**
@@ -35,7 +35,7 @@ public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
      * @param node
      *            The node to which this action belongs
      */
-    protected AbstractMoveNode(final IEnvironment<T> environment, final INode<T> node) {
+    protected AbstractMoveNode(final Environment<T> environment, final Node<T> node) {
         this(environment, node, false);
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
      *            return (2,3). If false, a relative coordinate is expected, and
      *            the method for the same effect must return (1,2).
      */
-    protected AbstractMoveNode(final IEnvironment<T> environment, final INode<T> node, final boolean isAbsolute) {
+    protected AbstractMoveNode(final Environment<T> environment, final Node<T> node, final boolean isAbsolute) {
         super(node);
         this.env = environment;
         this.isAbs = isAbsolute;
@@ -74,14 +74,14 @@ public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
     /**
      * @return the current environment
      */
-    public IEnvironment<T> getEnvironment() {
+    public Environment<T> getEnvironment() {
         return env;
     }
 
     /**
      * @return the position of the local node
      */
-    protected final IPosition getCurrentPosition() {
+    protected final Position getCurrentPosition() {
         return getNodePosition(getNode());
     }
 
@@ -89,7 +89,7 @@ public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
      * @return The next position where to move, in relative coordinates with
      *         respect to the current node position.
      */
-    public abstract IPosition getNextPosition();
+    public abstract Position getNextPosition();
 
     /**
      * Given a node, computes its position.
@@ -97,7 +97,7 @@ public abstract class AbstractMoveNode<T> extends AbstractAction<T> {
      * @param n the node
      * @return the position of the node
      */
-    protected final IPosition getNodePosition(final INode<T> n) {
+    protected final Position getNodePosition(final Node<T> n) {
         return env.getPosition(n);
     }
 

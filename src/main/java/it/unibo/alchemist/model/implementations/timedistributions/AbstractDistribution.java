@@ -6,10 +6,10 @@
  * the GNU General Public License, with a linking exception, as described
  * in the file LICENSE in the Alchemist distribution's top directory.
  */
-package it.unibo.alchemist.model.implementations.probabilitydistributions;
+package it.unibo.alchemist.model.implementations.timedistributions;
 
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 /**
@@ -22,15 +22,15 @@ import it.unibo.alchemist.model.interfaces.TimeDistribution;
 public abstract class AbstractDistribution<T> implements TimeDistribution<T> {
 
     private static final long serialVersionUID = -8906648194668569179L;
-    private ITime tau;
+    private Time tau;
     private boolean schedulable;
-    private final ITime startTime;
+    private final Time startTime;
 
     /**
      * @param start
      *            initial time
      */
-    public AbstractDistribution(final ITime start) {
+    public AbstractDistribution(final Time start) {
         tau = start;
         startTime = start;
     }
@@ -41,12 +41,12 @@ public abstract class AbstractDistribution<T> implements TimeDistribution<T> {
      * @param t
      *            the new time
      */
-    protected final void setTau(final ITime t) {
+    protected final void setTau(final Time t) {
         this.tau = t;
     }
 
     @Override
-    public final void update(final ITime curTime, final boolean executed, final double param, final IEnvironment<T> env) {
+    public final void update(final Time curTime, final boolean executed, final double param, final Environment<T> env) {
         if (!schedulable && curTime.compareTo(startTime) >= 0) {
             /*
              * If the simulation time is beyond the startTime for this reaction,
@@ -62,7 +62,7 @@ public abstract class AbstractDistribution<T> implements TimeDistribution<T> {
     }
 
     @Override
-    public final ITime getNextOccurence() {
+    public final Time getNextOccurence() {
         return tau;
     }
 
@@ -79,7 +79,7 @@ public abstract class AbstractDistribution<T> implements TimeDistribution<T> {
      * @param env
      *            the current environment
      */
-    protected abstract void updateStatus(final ITime curTime, final boolean executed, double param, final IEnvironment<T> env);
+    protected abstract void updateStatus(final Time curTime, final boolean executed, double param, final Environment<T> env);
 
     @Override
     public abstract AbstractDistribution<T> clone();

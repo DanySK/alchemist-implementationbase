@@ -12,9 +12,9 @@ import gnu.trove.TDoubleCollection;
 import gnu.trove.list.array.TDoubleArrayList;
 import it.unibo.alchemist.boundary.monitors.utils.Aggregator;
 import it.unibo.alchemist.boundary.monitors.utils.SubNaN;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +35,9 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
 
     @Override
     protected final double[] extractValues(
-            final IEnvironment<T> env,
-            final IReaction<T> r,
-            final ITime time,
+            final Environment<T> env,
+            final Reaction<T> r,
+            final Time time,
             final long step) {
         final List<TDoubleCollection> vpn = new ArrayList<>();
         for (final S sample : computeSamples(env, r, time, step)) {
@@ -72,7 +72,7 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
      *            current step
      * @return an array of properties of interest
      */
-    protected abstract double[] getProperties(IEnvironment<T> env, S sample, IReaction<T> r, ITime time, long step);
+    protected abstract double[] getProperties(Environment<T> env, S sample, Reaction<T> r, Time time, long step);
 
     /**
      * Given the current status of the simulated world, extract a list of
@@ -89,9 +89,9 @@ public abstract class EnvironmentSampler<S, T> extends EnvironmentInspector<T> {
      * @return an {@link Iterable} along samples
      */
     protected abstract Iterable<S> computeSamples(
-            final IEnvironment<T> env,
-            final IReaction<T> r,
-            final ITime time,
+            final Environment<T> env,
+            final Reaction<T> r,
+            final Time time,
             final long step);
 
     private static void expandList(final List<TDoubleCollection> vpn, final int i) {

@@ -11,15 +11,6 @@
  */
 package it.unibo.alchemist.model.implementations.neighborhoods;
 
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
-import it.unibo.alchemist.exceptions.UncomparableDistancesException;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INeighborhood;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.utils.L;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +22,12 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Neighborhood;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
 
 /**
  * A simple implementation of a neighborhood.
@@ -38,14 +35,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @param <T>
  *            The type which describes the concentration of a molecule
  */
-public final class Neighborhood<T> implements INeighborhood<T> {
+public final class CachedNeighborhood<T> implements Neighborhood<T> {
 
     private static final long serialVersionUID = 2810393824506583972L;
-    private final INode<T> c;
-    private final IEnvironment<T> env;
+    private final Node<T> c;
+    private final Environment<T> env;
     @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "False positive, TIntList implements Externalizable that Implements Serializable")
     private final TIntList kCache;
-    private final List<INode<T>> k;
+    private final List<Node<T>> k;
 
     /**
      * Builds a new neighborhood given a central node, its neighbors and the
@@ -58,12 +55,12 @@ public final class Neighborhood<T> implements INeighborhood<T> {
      * @param environment
      *            the environment
      */
-    public Neighborhood(final INode<T> center, final Collection<? extends INode<T>> nodes, final IEnvironment<T> environment) {
+    public CachedNeighborhood(final Node<T> center, final Collection<? extends Node<T>> nodes, final Environment<T> environment) {
         this.c = center;
         this.env = environment;
         kCache = new TIntArrayList(nodes.size());
         k = new ArrayList<>(nodes.size());
-        for (final INode<T> n : nodes) {
+        for (final Node<T> n : nodes) {
             kCache.add(n.getId());
             k.add(n);
         }
@@ -82,7 +79,7 @@ public final class Neighborhood<T> implements INeighborhood<T> {
      * @param environment
      *            the environment
      */
-    private Neighborhood(final INode<T> center, final TIntList map, final List<INode<T>> l, final IEnvironment<T> environment) {
+    private CachedNeighborhood(final Node<T> center, final TIntList map, final List<Node<T>> l, final Environment<T> environment) {
         this.c = center;
         this.env = environment;
         kCache = map;
@@ -90,7 +87,7 @@ public final class Neighborhood<T> implements INeighborhood<T> {
     }
 
     @Override
-    public void addNeighbor(final INode<T> neigh) {
+    public void addNeighbor(final Node<T> neigh) {
         if (!contains(neigh)) {
             int low = 0;
             int high = kCache.size() - 1;
@@ -112,12 +109,12 @@ public final class Neighborhood<T> implements INeighborhood<T> {
     }
 
     @Override
-    public Neighborhood<T> clone() throws CloneNotSupportedException {
-        return new Neighborhood<T>(c, new TIntArrayList(kCache), new ArrayList<>(k), env);
+    public CachedNeighborhood<T> clone() throws CloneNotSupportedException {
+        return new CachedNeighborhood<T>(c, new TIntArrayList(kCache), new ArrayList<>(k), env);
     }
 
     @Override
-    public boolean contains(final INode<T> n) {
+    public boolean contains(final Node<T> n) {
         return contains(n.getId());
     }
 
@@ -128,47 +125,43 @@ public final class Neighborhood<T> implements INeighborhood<T> {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof INeighborhood<?>) {
-            final INeighborhood<?> n = (INeighborhood<?>) obj;
+        if (obj instanceof Neighborhood<?>) {
+            final Neighborhood<?> n = (Neighborhood<?>) obj;
             return c.equals(n.getCenter()) && getNeighbors().equals(n.getNeighbors());
         }
         return false;
     }
 
     @Override
-    public Set<INode<T>> getBetweenRange(final double min, final double max) {
-        final Set<INode<T>> res = new LinkedHashSet<>(k.size() + 1, 1f);
-        final IPosition centerposition = env.getPosition(c);
-        for (final INode<T> n : k) {
-            try {
-                final double dist = centerposition.getDistanceTo(env.getPosition(n));
-                if (dist < max && dist > min) {
-                    res.add(n);
-                }
-            } catch (UncomparableDistancesException e) {
-                L.error(e);
+    public Set<Node<T>> getBetweenRange(final double min, final double max) {
+        final Set<Node<T>> res = new LinkedHashSet<>(k.size() + 1, 1f);
+        final Position centerposition = env.getPosition(c);
+        for (final Node<T> n : k) {
+            final double dist = centerposition.getDistanceTo(env.getPosition(n));
+            if (dist < max && dist > min) {
+                res.add(n);
             }
         }
         return res;
     }
 
     @Override
-    public INode<T> getCenter() {
+    public Node<T> getCenter() {
         return c;
     }
 
     @Override
-    public INode<T> getNeighborById(final int id) {
+    public Node<T> getNeighborById(final int id) {
         return k.get(kCache.binarySearch((id)));
     }
 
     @Override
-    public INode<T> getNeighborByNumber(final int num) {
+    public Node<T> getNeighborByNumber(final int num) {
         return k.get(num % size());
     }
 
     @Override
-    public List<? extends INode<T>> getNeighbors() {
+    public List<? extends Node<T>> getNeighbors() {
         return Collections.unmodifiableList(k);
     }
 
@@ -183,12 +176,12 @@ public final class Neighborhood<T> implements INeighborhood<T> {
     }
 
     @Override
-    public Iterator<INode<T>> iterator() {
+    public Iterator<Node<T>> iterator() {
         return k.iterator();
     }
 
     @Override
-    public void removeNeighbor(final INode<T> neighbor) {
+    public void removeNeighbor(final Node<T> neighbor) {
         kCache.remove(neighbor.getId());
         k.remove(neighbor);
     }
@@ -204,12 +197,12 @@ public final class Neighborhood<T> implements INeighborhood<T> {
     }
 
     @Override
-    public void forEach(final Consumer<? super INode<T>> arg0) {
+    public void forEach(final Consumer<? super Node<T>> arg0) {
         k.forEach(arg0);
     }
 
     @Override
-    public Spliterator<INode<T>> spliterator() {
+    public Spliterator<Node<T>> spliterator() {
         return k.spliterator();
     }
 

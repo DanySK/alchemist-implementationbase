@@ -9,11 +9,12 @@
 package it.unibo.alchemist.boundary.monitors;
 
 import org.danilopianini.view.ExportForGUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
-import it.unibo.alchemist.utils.L;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 
 /**
  * @param <T>
@@ -22,6 +23,7 @@ import it.unibo.alchemist.utils.L;
 public class NumberOfNodesNextToANode<T> extends EnvironmentInspector<T> {
 
     private static final long serialVersionUID = 6973385303909686690L;
+    private static final Logger L = LoggerFactory.getLogger(NumberOfNodesNextToANode.class);
 
     @ExportForGUI(nameToExport = "ID of the central node")
     private String id = "0";
@@ -29,14 +31,13 @@ public class NumberOfNodesNextToANode<T> extends EnvironmentInspector<T> {
     private String range = "10.0";
 
     @Override
-    protected double[] extractValues(final IEnvironment<T> env, final IReaction<T> r, final ITime time,
-            final long step) {
+    protected double[] extractValues(final Environment<T> env, final Reaction<T> r, final Time time, final long step) {
         try {
             return new double[] {
                     env.getNodesWithinRange(env.getNodeByID(Integer.parseInt(id)),
                     Double.parseDouble(range)).size() };
         } catch (NumberFormatException e) {
-            L.warn(e);
+            L.warn("Error parsing numbers", e);
         }
         return new double[] { Double.NaN };
     }

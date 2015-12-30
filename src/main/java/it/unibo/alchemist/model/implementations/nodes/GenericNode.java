@@ -11,9 +11,9 @@
  */
 package it.unibo.alchemist.model.implementations.nodes;
 
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +34,7 @@ import org.danilopianini.concurrency.ThreadLocalIdGenerator;
  * 
  * @param <T>
  */
-public abstract class GenericNode<T> implements INode<T> {
+public abstract class GenericNode<T> implements Node<T> {
 
     private static final int CENTER = 0;
     private static final int MAX = 1073741824;
@@ -62,8 +62,8 @@ public abstract class GenericNode<T> implements INode<T> {
     private static final AtomicInteger THREAD_UNSAFE = new AtomicInteger();
     private final int hash;
     private final int id;
-    private final List<IReaction<T>> reactions = new ArrayList<>();
-    private final Map<IMolecule, T> molecules = new ConcurrentHashMap<>();
+    private final List<Reaction<T>> reactions = new ArrayList<>();
+    private final Map<Molecule, T> molecules = new ConcurrentHashMap<>();
 
     /**
      * Basically, builds the node and just caches the hash code.
@@ -100,12 +100,12 @@ public abstract class GenericNode<T> implements INode<T> {
     }
 
     @Override
-    public void addReaction(final IReaction<T> r) {
+    public void addReaction(final Reaction<T> r) {
         reactions.add(r);
     }
 
     @Override
-    public int compareTo(final INode<T> o) {
+    public int compareTo(final Node<T> o) {
         if (o instanceof GenericNode<?>) {
             if (id > ((GenericNode<?>) o).id) {
                 return 1;
@@ -118,7 +118,7 @@ public abstract class GenericNode<T> implements INode<T> {
     }
 
     @Override
-    public boolean contains(final IMolecule m) {
+    public boolean contains(final Molecule m) {
         return molecules.containsKey(m);
     }
 
@@ -141,7 +141,7 @@ public abstract class GenericNode<T> implements INode<T> {
     }
 
     @Override
-    public T getConcentration(final IMolecule mol) {
+    public T getConcentration(final Molecule mol) {
         final T res = molecules.get(mol);
         if (res == null) {
             return createT();
@@ -155,7 +155,7 @@ public abstract class GenericNode<T> implements INode<T> {
     }
 
     @Override
-    public List<IReaction<T>> getReactions() {
+    public List<Reaction<T>> getReactions() {
         return reactions;
     }
 
@@ -165,22 +165,22 @@ public abstract class GenericNode<T> implements INode<T> {
     }
 
     @Override
-    public Iterator<IReaction<T>> iterator() {
+    public Iterator<Reaction<T>> iterator() {
         return reactions.iterator();
     }
 
     @Override
-    public void removeReaction(final IReaction<T> r) {
+    public void removeReaction(final Reaction<T> r) {
         reactions.remove(r);
     }
 
     @Override
-    public void setConcentration(final IMolecule mol, final T c) {
+    public void setConcentration(final Molecule mol, final T c) {
         molecules.put(mol, c);
     }
 
     @Override
-    public void removeConcentration(final IMolecule mol) {
+    public void removeConcentration(final Molecule mol) {
         molecules.remove(mol);
     }
 
@@ -190,17 +190,17 @@ public abstract class GenericNode<T> implements INode<T> {
     }
 
     @Override
-    public void forEach(final Consumer<? super IReaction<T>> action) {
+    public void forEach(final Consumer<? super Reaction<T>> action) {
         reactions.forEach(action);
     }
 
     @Override
-    public Spliterator<IReaction<T>> spliterator() {
+    public Spliterator<Reaction<T>> spliterator() {
         return reactions.spliterator();
     }
 
     @Override
-    public Map<IMolecule, T> getContents() {
+    public Map<Molecule, T> getContents() {
         return Collections.unmodifiableMap(molecules);
     }
 

@@ -12,13 +12,13 @@
 package it.unibo.alchemist.model.implementations.reactions;
 
 import it.unibo.alchemist.model.interfaces.Context;
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.ICondition;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.IMolecule;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IReaction;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Condition;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Reaction;
+import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 import java.util.ArrayList;
@@ -29,12 +29,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The type which describes the concentration of a molecule
  * 
- * This class offers a partial implementation of IReaction. In particular, it
+ * This class offers a partial implementation of Reaction. In particular, it
  * allows to write new reaction specifying only which distribution time to adopt
  * 
  * @param <T>
  */
-public abstract class AReaction<T> implements IReaction<T> {
+public abstract class AReaction<T> implements Reaction<T> {
 
     private static final int CENTER = 0;
     private static final AtomicInteger ID_GEN = new AtomicInteger();
@@ -54,15 +54,15 @@ public abstract class AReaction<T> implements IReaction<T> {
     private static final AtomicInteger POW = new AtomicInteger(1);
     private static final long serialVersionUID = 6454665278161217867L;
 
-    private List<? extends IAction<T>> actions = new ArrayList<IAction<T>>(0);
-    private List<? extends ICondition<T>> conditions = new ArrayList<ICondition<T>>(0);
-    private List<IMolecule> influencing = new ArrayList<IMolecule>(), influenced = new ArrayList<IMolecule>();
+    private List<? extends Action<T>> actions = new ArrayList<Action<T>>(0);
+    private List<? extends Condition<T>> conditions = new ArrayList<Condition<T>>(0);
+    private List<Molecule> influencing = new ArrayList<Molecule>(), influenced = new ArrayList<Molecule>();
 
     private final int hash;
     private Context incontext = Context.LOCAL, outcontext = Context.LOCAL;
     private int stringLength = Byte.MAX_VALUE;
     private final TimeDistribution<T> dist;
-    private final INode<T> node;
+    private final Node<T> node;
 
     /**
      * This method provides facility to clone reactions. Given a new reaction
@@ -81,14 +81,14 @@ public abstract class AReaction<T> implements IReaction<T> {
      * @param <T>
      *            The type which describes the concentration of a molecule
      */
-    protected static <T> void cloneConditionsAndActions(final List<? extends ICondition<T>> conditions, final List<? extends IAction<T>> actions, final IReaction<T> res) {
-        final INode<T> n = res.getNode();
-        final ArrayList<ICondition<T>> c = new ArrayList<ICondition<T>>(conditions.size());
-        for (final ICondition<T> cond : conditions) {
+    protected static <T> void cloneConditionsAndActions(final List<? extends Condition<T>> conditions, final List<? extends Action<T>> actions, final Reaction<T> res) {
+        final Node<T> n = res.getNode();
+        final ArrayList<Condition<T>> c = new ArrayList<Condition<T>>(conditions.size());
+        for (final Condition<T> cond : conditions) {
             c.add(cond.cloneOnNewNode(n));
         }
-        final ArrayList<IAction<T>> a = new ArrayList<IAction<T>>(actions.size());
-        for (final IAction<T> act : actions) {
+        final ArrayList<Action<T>> a = new ArrayList<Action<T>>(actions.size());
+        for (final Action<T> act : actions) {
             a.add(act.cloneOnNewNode(n, res));
         }
         res.setActions(a);
@@ -103,7 +103,7 @@ public abstract class AReaction<T> implements IReaction<T> {
      * @param pd
      *            the time distribution this reaction should follow
      */
-    public AReaction(final INode<T> n, final TimeDistribution<T> pd) {
+    public AReaction(final Node<T> n, final TimeDistribution<T> pd) {
         final int id = ID_GEN.getAndIncrement();
         if (id == 0) {
             hash = CENTER;
@@ -128,7 +128,7 @@ public abstract class AReaction<T> implements IReaction<T> {
     }
 
     @Override
-    public int compareTo(final IReaction<T> o) {
+    public int compareTo(final Reaction<T> o) {
         return getTau().compareTo(o.getTau());
     }
 
@@ -151,7 +151,7 @@ public abstract class AReaction<T> implements IReaction<T> {
     }
 
     @Override
-    public ITime getTau() {
+    public Time getTau() {
         return dist.getNextOccurence();
     }
 
@@ -188,14 +188,14 @@ public abstract class AReaction<T> implements IReaction<T> {
         tot.append(NEXT);
         tot.append(getTau());
         tot.append('\n');
-        for (final ICondition<T> c : getConditions()) {
+        for (final Condition<T> c : getConditions()) {
             tot.append(c);
             tot.append(' ');
         }
         tot.append(SEP1);
         tot.append(getRateAsString());
         tot.append(SEP2);
-        for (final IAction<T> a : getActions()) {
+        for (final Action<T> a : getActions()) {
             tot.append(a);
             tot.append(' ');
         }
@@ -213,7 +213,7 @@ public abstract class AReaction<T> implements IReaction<T> {
     }
 
     @Override
-    public final void update(final ITime curTime, final boolean executed, final IEnvironment<T> env) {
+    public final void update(final Time curTime, final boolean executed, final Environment<T> env) {
         updateInternalStatus(curTime, executed, env);
         dist.update(curTime, executed, getRate(), env);
     }
@@ -229,13 +229,13 @@ public abstract class AReaction<T> implements IReaction<T> {
      * @param m
      *            the influenced molecule
      */
-    protected void addInfluencedMolecule(final IMolecule m) {
+    protected void addInfluencedMolecule(final Molecule m) {
         influenced.add(m);
     }
 
     /**
      * This method gets called as soon as
-     * {@link #update(ITime, boolean, IEnvironment)} is called. It is useful to
+     * {@link #update(Time, boolean, Environment)} is called. It is useful to
      * update the internal status of the reaction.
      * 
      * @param curTime
@@ -246,7 +246,7 @@ public abstract class AReaction<T> implements IReaction<T> {
      * @param env
      *            the current environment
      */
-    protected abstract void updateInternalStatus(ITime curTime, boolean executed, IEnvironment<T> env);
+    protected abstract void updateInternalStatus(Time curTime, boolean executed, Environment<T> env);
 
     /**
      * Allows subclasses to add influencing molecules.
@@ -254,7 +254,7 @@ public abstract class AReaction<T> implements IReaction<T> {
      * @param m
      *            the molecule to add
      */
-    protected void addInfluencingMolecule(final IMolecule m) {
+    protected void addInfluencingMolecule(final Molecule m) {
         influencing.add(m);
     }
 
@@ -272,33 +272,33 @@ public abstract class AReaction<T> implements IReaction<T> {
 
     @Override
     public void execute() {
-        for (final IAction<T> a : actions) {
+        for (final Action<T> a : actions) {
             a.execute();
         }
     }
 
     @Override
-    public List<? extends IAction<T>> getActions() {
+    public List<? extends Action<T>> getActions() {
         return actions;
     }
 
     @Override
-    public List<? extends ICondition<T>> getConditions() {
+    public List<? extends Condition<T>> getConditions() {
         return conditions;
     }
 
     @Override
-    public List<? extends IMolecule> getInfluencedMolecules() {
+    public List<? extends Molecule> getInfluencedMolecules() {
         return influenced;
     }
 
     @Override
-    public List<? extends IMolecule> getInfluencingMolecules() {
+    public List<? extends Molecule> getInfluencingMolecules() {
         return influencing;
     }
 
     @Override
-    public INode<T> getNode() {
+    public Node<T> getNode() {
         return node;
     }
 
@@ -310,14 +310,14 @@ public abstract class AReaction<T> implements IReaction<T> {
     }
 
     @Override
-    public void setActions(final List<? extends IAction<T>> a) {
+    public void setActions(final List<? extends Action<T>> a) {
         actions = a;
         Context lessStrict = Context.LOCAL;
-        influenced = new ArrayList<IMolecule>();
-        for (final IAction<T> act : actions) {
+        influenced = new ArrayList<Molecule>();
+        for (final Action<T> act : actions) {
             final Context condcontext = act.getContext();
             lessStrict = lessStrict.isMoreStrict(condcontext) ? condcontext : lessStrict;
-            final List<? extends IMolecule> mod = act.getModifiedMolecules();
+            final List<? extends Molecule> mod = act.getModifiedMolecules();
             /*
              * This check is needed because of the meaning of a null list of
              * modified molecules: it means that the reaction will influence
@@ -336,14 +336,14 @@ public abstract class AReaction<T> implements IReaction<T> {
     }
 
     @Override
-    public void setConditions(final List<? extends ICondition<T>> c) {
+    public void setConditions(final List<? extends Condition<T>> c) {
         conditions = c;
         Context lessStrict = Context.LOCAL;
-        influencing = new ArrayList<IMolecule>();
-        for (final ICondition<T> cond : conditions) {
+        influencing = new ArrayList<Molecule>();
+        for (final Condition<T> cond : conditions) {
             final Context condcontext = cond.getContext();
             lessStrict = lessStrict.isMoreStrict(condcontext) ? condcontext : lessStrict;
-            final List<? extends IMolecule> mod = cond.getInfluencingMolecules();
+            final List<? extends Molecule> mod = cond.getInfluencingMolecules();
             /*
              * This check is needed because of the meaning of a null list of
              * modified molecules: it means that the reaction will influence

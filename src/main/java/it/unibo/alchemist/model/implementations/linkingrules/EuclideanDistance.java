@@ -8,11 +8,11 @@
  */
 package it.unibo.alchemist.model.implementations.linkingrules;
 
-import it.unibo.alchemist.model.implementations.neighborhoods.Neighborhood;
-import it.unibo.alchemist.model.interfaces.ILinkingRule;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INeighborhood;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.implementations.neighborhoods.CachedNeighborhood;
+import it.unibo.alchemist.model.interfaces.LinkingRule;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Neighborhood;
+import it.unibo.alchemist.model.interfaces.Node;
 
 /**
  * LinkingRule which connects nodes whose euclidean distance is shorter than a
@@ -21,7 +21,7 @@ import it.unibo.alchemist.model.interfaces.INode;
  * @param <T>
  *            The type which describes the concentration of a molecule
  */
-public class EuclideanDistance<T> implements ILinkingRule<T> {
+public class EuclideanDistance<T> implements LinkingRule<T> {
 
     private static final long serialVersionUID = -405055780667941773L;
     private final double range;
@@ -35,8 +35,8 @@ public class EuclideanDistance<T> implements ILinkingRule<T> {
     }
 
     @Override
-    public INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
-        return new Neighborhood<>(center, env.getNodesWithinRange(center, range), env);
+    public Neighborhood<T> computeNeighborhood(final Node<T> center, final Environment<T> env) {
+        return new CachedNeighborhood<>(center, env.getNodesWithinRange(center, range), env);
     }
 
     /**

@@ -10,10 +10,10 @@ package it.unibo.alchemist.model.implementations.linkingrules;
 
 import gnu.trove.map.TIntDoubleMap;
 import gnu.trove.map.hash.TIntDoubleHashMap;
-import it.unibo.alchemist.model.implementations.neighborhoods.Neighborhood;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INeighborhood;
-import it.unibo.alchemist.model.interfaces.INode;
+import it.unibo.alchemist.model.implementations.neighborhoods.CachedNeighborhood;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Neighborhood;
+import it.unibo.alchemist.model.interfaces.Node;
 
 /**
  * This linking rule dynamically searches for the best radius for each device,
@@ -151,14 +151,14 @@ public class AdaptiveRange<T> extends EuclideanDistance<T> {
     }
 
     @Override
-    public final INeighborhood<T> computeNeighborhood(final INode<T> center, final IEnvironment<T> env) {
+    public final Neighborhood<T> computeNeighborhood(final Node<T> center, final Environment<T> env) {
         if (!ranges.containsKey(center.getId())) {
             ranges.put(center.getId(), getRange());
         }
         final double curRange = ranges.get(center.getId());
-        final INeighborhood<T> neigh = new Neighborhood<>(center, env.getNodesWithinRange(center, curRange), env);
+        final Neighborhood<T> neigh = new CachedNeighborhood<>(center, env.getNodesWithinRange(center, curRange), env);
         for (int i = 0; i < neigh.size();) {
-            final INode<T> neighbor = neigh.getNeighborByNumber(i);
+            final Node<T> neighbor = neigh.getNeighborByNumber(i);
             final double neighrange = ranges.get(neighbor.getId());
             if (conditionForRemoval(env, center, neighbor, curRange, neighrange)) {
                 neigh.removeNeighbor(neighbor);
@@ -185,7 +185,7 @@ public class AdaptiveRange<T> extends EuclideanDistance<T> {
      * @param neighRange the communication range of the neighbor
      * @return true if the node must be removed, false otherwise
      */
-    protected boolean conditionForRemoval(final IEnvironment<T> env, final INode<T> center, final INode<T> neighbor, final double centerRange, final double neighRange) {
+    protected boolean conditionForRemoval(final Environment<T> env, final Node<T> center, final Node<T> neighbor, final double centerRange, final double neighRange) {
         return env.getDistanceBetweenNodes(center, neighbor) > neighRange;
     }
 

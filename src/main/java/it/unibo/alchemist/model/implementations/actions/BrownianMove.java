@@ -8,13 +8,15 @@
  */
 package it.unibo.alchemist.model.implementations.actions;
 
-import it.unibo.alchemist.external.cern.jet.random.engine.RandomEngine;
+import org.apache.commons.math3.random.RandomGenerator;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unibo.alchemist.model.implementations.positions.Continuous2DEuclidean;
-import it.unibo.alchemist.model.interfaces.IAction;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IPosition;
-import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.Action;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Position;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 /**
  * Moves the node randomly.
@@ -25,7 +27,8 @@ public class BrownianMove<T> extends AbstractMoveNode<T> {
 
     private static final long serialVersionUID = -904100978119782403L;
     private final double r;
-    private final RandomEngine rng;
+    @SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "All the random engines provided by Apache are Serializable")
+    private final RandomGenerator rng;
 
     /**
      * @param environment
@@ -33,24 +36,24 @@ public class BrownianMove<T> extends AbstractMoveNode<T> {
      * @param node
      *            the node
      * @param rand
-     *            the simulation {@link RandomEngine}.
+     *            the simulation {@link RandomGenerator}.
      * @param range
      *            the maximum distance the node may walk in a single step for
      *            each dimension
      */
-    public BrownianMove(final IEnvironment<T> environment, final INode<T> node, final RandomEngine rand, final double range) {
+    public BrownianMove(final Environment<T> environment, final Node<T> node, final RandomGenerator rand, final double range) {
         super(environment, node);
         r = range;
         rng = rand;
     }
 
     @Override
-    public IAction<T> cloneOnNewNode(final INode<T> n, final IReaction<T> reaction) {
+    public Action<T> cloneOnNewNode(final Node<T> n, final Reaction<T> reaction) {
         return new BrownianMove<>(getEnvironment(), n, rng, r);
     }
 
     @Override
-    public IPosition getNextPosition() {
+    public Position getNextPosition() {
         return new Continuous2DEuclidean(genRandom() * r, genRandom() * r);
     }
 
@@ -66,9 +69,9 @@ public class BrownianMove<T> extends AbstractMoveNode<T> {
     }
 
     /**
-     * @return the {@link RandomEngine}
+     * @return the {@link RandomGenerator}
      */
-    protected RandomEngine getRandomEngine() {
+    protected RandomGenerator getRandomGenerator() {
         return rng;
     }
 

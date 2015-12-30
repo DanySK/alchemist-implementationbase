@@ -9,9 +9,9 @@
 package it.unibo.alchemist.model.implementations.actions;
 
 import it.unibo.alchemist.model.interfaces.Context;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.INode;
-import it.unibo.alchemist.model.interfaces.IReaction;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 /**
  * @param <T> concentration type
@@ -22,13 +22,13 @@ public class RemoveNode<T> extends AbstractAction<T> {
      * 
      */
     private static final long serialVersionUID = -7358217984854060148L;
-    private final IEnvironment<T> env;
+    private final Environment<T> env;
 
     /**
      * @param environment the current environment
      * @param node the node for this action
      */
-    public RemoveNode(final IEnvironment<T> environment, final INode<T> node) {
+    public RemoveNode(final Environment<T> environment, final Node<T> node) {
         super(node);
         env = environment;
     }
@@ -51,12 +51,12 @@ public class RemoveNode<T> extends AbstractAction<T> {
     /**
      * @return the current environment
      */
-    protected IEnvironment<T> getEnvironment() {
+    protected Environment<T> getEnvironment() {
         return env;
     }
 
     @Override
-    public RemoveNode<T> cloneOnNewNode(final INode<T> n, final IReaction<T> r) {
+    public RemoveNode<T> cloneOnNewNode(final Node<T> n, final Reaction<T> r) {
         return new RemoveNode<T>(getEnvironment(), n);
     }
 

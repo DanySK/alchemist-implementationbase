@@ -6,12 +6,12 @@
  * the GNU General Public License, with a linking exception, as described
  * in the file LICENSE in the Alchemist distribution's top directory.
  */
-package it.unibo.alchemist.model.implementations.probabilitydistributions;
+package it.unibo.alchemist.model.implementations.timedistributions;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unibo.alchemist.model.implementations.times.DoubleTime;
-import it.unibo.alchemist.model.interfaces.IEnvironment;
-import it.unibo.alchemist.model.interfaces.ITime;
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Time;
 
 /**
  * A DiracComb is a sequence of events that happen every fixed time interval.
@@ -30,7 +30,7 @@ public class DiracComb<T> extends AbstractDistribution<T> {
      * @param rate
      *            how many events should happen per time unit
      */
-    public DiracComb(final ITime start, final double rate) {
+    public DiracComb(final Time start, final double rate) {
         super(start);
         timeInterval = 1 / rate;
     }
@@ -50,10 +50,10 @@ public class DiracComb<T> extends AbstractDistribution<T> {
 
     @Override
     protected void updateStatus(
-            final ITime curTime,
+            final Time curTime,
             final boolean executed,
             final double param,
-            final IEnvironment<T> env) {
+            final Environment<T> env) {
         if (executed) {
             setTau(new DoubleTime(curTime.toDouble() + timeInterval));
         }
