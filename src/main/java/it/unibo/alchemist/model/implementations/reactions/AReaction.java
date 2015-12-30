@@ -22,6 +22,7 @@ import it.unibo.alchemist.model.interfaces.Time;
 import it.unibo.alchemist.model.interfaces.TimeDistribution;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -279,22 +280,22 @@ public abstract class AReaction<T> implements Reaction<T> {
 
     @Override
     public List<? extends Action<T>> getActions() {
-        return actions;
+        return Collections.unmodifiableList(actions);
     }
 
     @Override
     public List<? extends Condition<T>> getConditions() {
-        return conditions;
+        return Collections.unmodifiableList(conditions);
     }
 
     @Override
     public List<? extends Molecule> getInfluencedMolecules() {
-        return influenced;
+        return Collections.unmodifiableList(influenced);
     }
 
     @Override
     public List<? extends Molecule> getInfluencingMolecules() {
-        return influencing;
+        return Collections.unmodifiableList(influencing);
     }
 
     @Override
