@@ -290,13 +290,32 @@ public abstract class AReaction<T> implements Reaction<T> {
 
     @Override
     public List<? extends Molecule> getInfluencedMolecules() {
-        return Collections.unmodifiableList(influenced);
+        return influenced == null ? null : Collections.unmodifiableList(influenced);
+    }
+
+    /**
+     * @param influenced
+     *            the new influenced molecules. Can be null.
+     */
+    @SuppressWarnings("unchecked")
+    protected void setInfluencedMolecules(final List<? extends Molecule> influenced) {
+        this.influenced = (List<Molecule>) influenced;
     }
 
     @Override
     public List<? extends Molecule> getInfluencingMolecules() {
-        return Collections.unmodifiableList(influencing);
+        return influenced == null ? null : Collections.unmodifiableList(influencing);
     }
+
+    /**
+     * @param influencing
+     *            the new influencing molecules. Can be null.
+     */
+    @SuppressWarnings("unchecked")
+    protected void setInfluencingMolecules(final List<? extends Molecule> influencing) {
+        this.influencing = (List<Molecule>) influencing;
+    }
+
 
     @Override
     public Node<T> getNode() {
