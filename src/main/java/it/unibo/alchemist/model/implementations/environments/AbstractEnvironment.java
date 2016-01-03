@@ -208,11 +208,7 @@ public abstract class AbstractEnvironment<T> implements Environment<T> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        for (final Node<T> n : this) {
-            sb.append(n + separator);
-        }
-        return sb.toString();
+        return getClass().getSimpleName();
     }
 
     /**
