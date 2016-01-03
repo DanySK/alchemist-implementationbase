@@ -65,4 +65,9 @@ public class DiracComb<T> extends AbstractDistribution<T> {
         return new DiracComb<>(getNextOccurence(), 1 / timeInterval);
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " every " + timeInterval;
+    }
+
 }
