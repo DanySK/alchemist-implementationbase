@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -125,6 +126,7 @@ public abstract class AbstractEnvironment<T> implements Environment<T> {
      * @return the position removed
      */
     protected final Position getAndDeletePosition(final Node<T> node) {
+        Objects.requireNonNull(node);
         return nodeToPos.remove(node.getId());
     }
 
