@@ -17,6 +17,7 @@ import it.unibo.alchemist.model.interfaces.Node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -39,6 +40,7 @@ public abstract class AbstractAction<T> implements Action<T> {
      *            the node this action belongs to
      */
     protected AbstractAction(final Node<T> node) {
+        Objects.requireNonNull(node);
         this.n = node;
     }
 
