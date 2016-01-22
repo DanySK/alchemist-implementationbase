@@ -124,7 +124,11 @@ public abstract class AbstractEnvironment<T> implements Environment<T> {
      * @param node
      *            the node whose position will be removed
      * @return the position removed
+     * 
+     * @deprecated This method is dangerous and should never be used. Will ne
+     *             removed in the next major release
      */
+    @Deprecated
     protected final Position getAndDeletePosition(final Node<T> node) {
         Objects.requireNonNull(node);
         return nodeToPos.remove(node.getId());
