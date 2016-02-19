@@ -11,21 +11,27 @@
  */
 package it.unibo.alchemist.model.implementations.nodes;
 
-import it.unibo.alchemist.model.interfaces.Molecule;
-import it.unibo.alchemist.model.interfaces.Node;
-import it.unibo.alchemist.model.interfaces.Reaction;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Spliterator;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.danilopianini.concurrency.ThreadLocalIdGenerator;
+
+import com.google.common.collect.MapMaker;
+
+import it.unibo.alchemist.model.interfaces.Environment;
+import it.unibo.alchemist.model.interfaces.Molecule;
+import it.unibo.alchemist.model.interfaces.Node;
+import it.unibo.alchemist.model.interfaces.Reaction;
 
 
 /**
@@ -36,34 +42,15 @@ import org.danilopianini.concurrency.ThreadLocalIdGenerator;
  */
 public abstract class GenericNode<T> implements Node<T> {
 
-    private static final int CENTER = 0;
-    private static final int MAX = 1073741824;
-    private static final int MIN = -MAX;
-    private static final ThreadLocal<Integer> ODD = new ThreadLocal<Integer>() {
-        @Override
-        protected Integer initialValue() {
-            return 1;
-        }
-    };
-    private static final ThreadLocal<Boolean> POSITIVE = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return true;
-        }
-    };
-    private static final ThreadLocal<Integer> POW = new ThreadLocal<Integer>() {
-        @Override
-        protected Integer initialValue() {
-            return 1;
-        }
-    };
     private static final long serialVersionUID = 2496775909028222278L;
+    private static final ConcurrentMap<Environment<?>, AtomicInteger> IDGENERATOR = new MapMaker()
+            .weakKeys().makeMap();
+    private static final Semaphore MUTEX = new Semaphore(1);
     private static final ThreadLocalIdGenerator SINGLETON = new ThreadLocalIdGenerator();
     private static final AtomicInteger THREAD_UNSAFE = new AtomicInteger();
-    private final int hash;
     private final int id;
     private final List<Reaction<T>> reactions = new ArrayList<>();
-    private final Map<Molecule, T> molecules = new ConcurrentHashMap<>();
+    private final Map<Molecule, T> molecules = new LinkedHashMap<>();
 
     /**
      * Basically, builds the node and just caches the hash code.
@@ -72,31 +59,38 @@ public abstract class GenericNode<T> implements Node<T> {
      *            true if the id should be local to the current thread. In order
      *            to keep the node ids along multiple simulations, pass true and
      *            use different threads to instance the nodes.
+     * @deprecated this constructor can not generate ids correctly in case
+     *             batches of simulation are executed by the same thread, and as
+     *             such it has been deprecated and is scheduled for removal at
+     *             the next major release.
      */
+    @Deprecated
     protected GenericNode(final boolean threadLocal) {
-        if (threadLocal) {
-            id = SINGLETON.genId();
-        } else {
-            id = THREAD_UNSAFE.getAndIncrement();
+        this(threadLocal ? SINGLETON.genId() : THREAD_UNSAFE.getAndIncrement());
+    }
+
+    private GenericNode(final int id) {
+        this.id = id;
+    }
+
+    /**
+     * @param env
+     *            the environment, used to generate sequential ids for each
+     *            environment, always starting from 0.
+     */
+    public GenericNode(final Environment<?> env) {
+        this(idFromEnv(env));
+    }
+
+    private static int idFromEnv(final Environment<?> env) {
+        MUTEX.acquireUninterruptibly();
+        AtomicInteger idgen = IDGENERATOR.get(Objects.requireNonNull(env));
+        if (idgen == null) {
+            idgen = new AtomicInteger();
+            IDGENERATOR.put(env, idgen);
         }
-        if (id == 0) {
-            hash = CENTER;
-        } else {
-            final boolean positive = POSITIVE.get();
-            final int val = positive ? MAX : MIN;
-            final int pow = POW.get();
-            final int odd = ODD.get();
-            hash = val / pow * odd;
-            if (!positive) {
-                if (odd + 2 > pow) {
-                    POW.set(pow * 2);
-                    ODD.set(1);
-                } else {
-                    ODD.set(odd + 2);
-                }
-            }
-            POSITIVE.set(!positive);
-        }
+        MUTEX.release();
+        return idgen.getAndIncrement();
     }
 
     @Override
@@ -161,7 +155,7 @@ public abstract class GenericNode<T> implements Node<T> {
 
     @Override
     public int hashCode() {
-        return hash;
+        return id;
     }
 
     @Override
