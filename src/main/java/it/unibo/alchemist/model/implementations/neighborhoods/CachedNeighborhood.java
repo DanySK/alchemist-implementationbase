@@ -68,17 +68,6 @@ public final class CachedNeighborhood<T> implements Neighborhood<T> {
         kCache.sort();
     }
 
-    /**
-     * Builds a new neighborhood given a central node, its neighbors and the
-     * environment.
-     * 
-     * @param center
-     *            the central node
-     * @param nodes
-     *            the neighbors of the central node
-     * @param environment
-     *            the environment
-     */
     private CachedNeighborhood(final Node<T> center, final TIntList map, final List<Node<T>> l, final Environment<T> environment) {
         this.c = center;
         this.env = environment;
