@@ -194,6 +194,11 @@ public abstract class GenericNode<T> implements Node<T> {
     }
 
     @Override
+    public GenericNode<T> cloneNode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Map<Molecule, T> getContents() {
         return Collections.unmodifiableMap(molecules);
     }
