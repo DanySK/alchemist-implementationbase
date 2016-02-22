@@ -52,6 +52,17 @@ public abstract class GenericNode<T> implements Node<T> {
     private final List<Reaction<T>> reactions = new ArrayList<>();
     private final Map<Molecule, T> molecules = new LinkedHashMap<>();
 
+    private static int idFromEnv(final Environment<?> env) {
+        MUTEX.acquireUninterruptibly();
+        AtomicInteger idgen = IDGENERATOR.get(Objects.requireNonNull(env));
+        if (idgen == null) {
+            idgen = new AtomicInteger();
+            IDGENERATOR.put(env, idgen);
+        }
+        MUTEX.release();
+        return idgen.getAndIncrement();
+    }
+
     /**
      * Basically, builds the node and just caches the hash code.
      * 
@@ -69,10 +80,6 @@ public abstract class GenericNode<T> implements Node<T> {
         this(threadLocal ? SINGLETON.genId() : THREAD_UNSAFE.getAndIncrement());
     }
 
-    private GenericNode(final int id) {
-        this.id = id;
-    }
-
     /**
      * @param env
      *            the environment, used to generate sequential ids for each
@@ -82,20 +89,18 @@ public abstract class GenericNode<T> implements Node<T> {
         this(idFromEnv(env));
     }
 
-    private static int idFromEnv(final Environment<?> env) {
-        MUTEX.acquireUninterruptibly();
-        AtomicInteger idgen = IDGENERATOR.get(Objects.requireNonNull(env));
-        if (idgen == null) {
-            idgen = new AtomicInteger();
-            IDGENERATOR.put(env, idgen);
-        }
-        MUTEX.release();
-        return idgen.getAndIncrement();
+    private GenericNode(final int id) {
+        this.id = id;
     }
 
     @Override
     public void addReaction(final Reaction<T> r) {
         reactions.add(r);
+    }
+
+    @Override
+    public GenericNode<T> cloneNode() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -130,6 +135,11 @@ public abstract class GenericNode<T> implements Node<T> {
     }
 
     @Override
+    public void forEach(final Consumer<? super Reaction<T>> action) {
+        reactions.forEach(action);
+    }
+
+    @Override
     public int getChemicalSpecies() {
         return molecules.size();
     }
@@ -141,6 +151,11 @@ public abstract class GenericNode<T> implements Node<T> {
             return createT();
         }
         return res;
+    }
+
+    @Override
+    public Map<Molecule, T> getContents() {
+        return Collections.unmodifiableMap(molecules);
     }
 
     @Override
@@ -164,6 +179,11 @@ public abstract class GenericNode<T> implements Node<T> {
     }
 
     @Override
+    public void removeConcentration(final Molecule mol) {
+        molecules.remove(mol);
+    }
+
+    @Override
     public void removeReaction(final Reaction<T> r) {
         reactions.remove(r);
     }
@@ -174,33 +194,13 @@ public abstract class GenericNode<T> implements Node<T> {
     }
 
     @Override
-    public void removeConcentration(final Molecule mol) {
-        molecules.remove(mol);
-    }
-
-    @Override
-    public String toString() {
-        return molecules.toString();
-    }
-
-    @Override
-    public void forEach(final Consumer<? super Reaction<T>> action) {
-        reactions.forEach(action);
-    }
-
-    @Override
     public Spliterator<Reaction<T>> spliterator() {
         return reactions.spliterator();
     }
 
     @Override
-    public GenericNode<T> cloneNode() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Map<Molecule, T> getContents() {
-        return Collections.unmodifiableMap(molecules);
+    public String toString() {
+        return molecules.toString();
     }
 
 }
