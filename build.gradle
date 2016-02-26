@@ -52,6 +52,7 @@ dependencies {
     compile "org.danilopianini:javalib-java7:$javalib7Version"
     compile "org.reflections:reflections:$reflectionsVersion"
     compile "org.slf4j:slf4j-api:$slf4jVersion"
+    compile "net.sourceforge.streamsupport:streamsupport:$streamsupportVersion"
     
     testCompile "junit:junit:$junitVersion"
     
