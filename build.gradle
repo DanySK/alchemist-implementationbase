@@ -44,6 +44,7 @@ configurations {
 }
 
 dependencies {
+    compile "com.google.guava:guava:$guavaVersion"
     compile "com.google.code.findbugs:findbugs:$findBugsVersion"
     compile "it.unibo.alchemist:alchemist-interfaces:$interfacesVersion"
     compile "it.unibo.alchemist:alchemist-time:$timeVersion"
