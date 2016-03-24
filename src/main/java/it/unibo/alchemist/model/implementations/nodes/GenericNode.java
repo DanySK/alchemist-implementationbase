@@ -49,7 +49,7 @@ public abstract class GenericNode<T> implements Node<T> {
     private static final AtomicInteger THREAD_UNSAFE = new AtomicInteger();
     private final int id;
     private final List<Reaction<T>> reactions = new ArrayList<>();
-    private final ConcurrentMap<Molecule, T> molecules = new MapMaker().concurrencyLevel(2).makeMap();
+    private final Map<Molecule, T> molecules = new MapMaker().concurrencyLevel(2).makeMap();
 
     private static int idFromEnv(final Environment<?> env) {
         MUTEX.acquireUninterruptibly();
