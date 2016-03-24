@@ -51,8 +51,7 @@ public abstract class AbstractEnvironment<T> implements Environment<T> {
      *            retrieve nodes.
      */
     protected AbstractEnvironment(final SpatialIndex<Node<T>> internalIndex) {
-        assert internalIndex != null;
-        spatialIndex = internalIndex;
+        spatialIndex = Objects.requireNonNull(internalIndex);
     }
 
     /**
